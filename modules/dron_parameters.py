@@ -5,25 +5,31 @@ import pymavlink.dialects.v20.all as dialect
 
 
 def _getParams(self,parameters,  callback=None):
+    #parameters = json.loads(parameters)
     parameters = ['FENCE_ALT_MAX', 'FENCE_ENABLE', 'FENCE_MARGIN', 'FENCE_ACTION',
                   "RTL_ALT", "PILOT_SPEED_UP", 'FLTMODE6']
     result = []
     for PARAM in parameters:
         ready = False
         while not ready:
+            print("Requesting...")
             self.vehicle.mav.param_request_read_send(
                 self.vehicle.target_system, self.vehicle.target_component,
                 PARAM.encode(encoding="utf-8"),
                 -1
             )
+            print("After request")
             message = self.vehicle.recv_match(type='PARAM_VALUE', blocking=True).to_dict()
+            print("After message")
             if message['param_id'] == PARAM:
                 ready = True
-
+            print("After if")
         result.append({
             message['param_id']: message["param_value"]
         })
+        print("After append")
         print('ya tengo el siguiente')
+        print("\n")
 
     print('ya están todos')
     print (result)
@@ -38,7 +44,6 @@ def _getParams(self,parameters,  callback=None):
 
 
 def getParams(self, parameters, blocking=True, callback=None):
-    print("Inside Params")
     if blocking:
         result = self._getParams(parameters)
         return result

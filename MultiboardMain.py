@@ -26,9 +26,9 @@ class ComputeCoords:
         # self.refCoord2 = [790, 370]
         # self.refPosition2 = [41.27635096595008, 1.9891352578997614]
 
-        self.refCoord = [84, 503]
+        self.refCoord = [84, 293]
         self.refPosition = [41.2764267, 1.9882317]
-        self.refCoord2 = [1488, 661]
+        self.refCoord2 = [768, 358]
         self.refPosition2 = [41.2763652, 1.98911288]
         distCoord = (
             math.sqrt(
@@ -89,6 +89,7 @@ class ComputeCoords:
 class App(ctk.CTk):
 
     def on_message(self, client, userdata, message):
+        print("New message")
         MessageDroneId = int(str(message.topic).split("/")[0].split("autopilotService")[1])
         ReceivedInfoType = str(message.topic).split("/")[2]
         if ReceivedInfoType == "parameters":
@@ -104,7 +105,15 @@ class App(ctk.CTk):
                         payload[5]['PILOT_SPEED_UP'],
                         payload[6]['FLTMODE6'],
                     )
-                    print(self.DroneDataList[droneInfo.DroneId].Pilot_Speed_Up)
+                    print("Fence Alt Max"+str(payload[0]['FENCE_ALT_MAX']))
+                    print("Fence Enable"+str(payload[1]['FENCE_ENABLE']))
+                    print("Fence Margin"+str(payload[2]['FENCE_MARGIN']))
+                    print("Fence Action"+str(payload[3]['FENCE_ACTION']))
+                    print("RTL_ALT"+str(payload[4]['RTL_ALT']))
+                    print("Pilot speed up"+str(payload[5]['PILOT_SPEED_UP']))
+                    print("FLTmode6"+str(payload[6]['FLTMODE6']))
+
+                    self.update_config_frame(self.DroneDataList[droneInfo.DroneId])
         if ReceivedInfoType == "connected":
             print("Dron " + str(MessageDroneId) + " conectado")
             self.DroneDataList[MessageDroneId - 1].Status = "connected"
@@ -272,7 +281,7 @@ class App(ctk.CTk):
         self.DroneSelectionPanel.grid_propagate(False) '''
 
         # Setting up the Canvas image
-        self.DroneLabImage = ImageTk.PhotoImage(Image.open("assets/DroneLabImage_2.png"))
+        self.DroneLabImage = ImageTk.PhotoImage(Image.open("assets/recintoDrone.png"))
         self.ViewportCanvas = ctk.CTkCanvas( self.DroneViewportPanel,height=830, width=1115)
         self.ViewportCanvas.grid(row=0, column=0)
         self.ViewportCanvas.create_image(552.5,415, image=self.DroneLabImage)
@@ -347,7 +356,6 @@ class App(ctk.CTk):
                 button.grid(row=row, column=col, padx=5, pady=5)
                 buttons.append(button)
                 button.bind("<ButtonPress-1>", lambda event, tab=self.selected_tab: self.on_moving_press(position, tab))
-                button.bind("<ButtonRelease-1>", lambda event, tab=self.selected_tab: self.on_moving_release(tab))
 
         right_frame = ctk.CTkFrame(self.DroneInfoPanel, width=120, fg_color="#db7f7f")
         right_frame.grid(row=0, column=1, padx=5, pady=5, sticky="NSEW")
@@ -393,7 +401,6 @@ class App(ctk.CTk):
             self.client.publish("miMain/autopilotService" + str(drone_num+1) + "/arm")
         if button_text == "Takeoff":
             self.client.publish("miMain/autopilotService" + str(drone_num+1) + "/takeOff")
-            self.client.publish("miMain/autopilotService" + str(drone_num + 1) + "/startGo")
         if button_text == "RTL":
             self.client.publish("miMain/autopilotService" + str(drone_num+1) + "/RTL")
         if button_text == "Land":
@@ -404,23 +411,17 @@ class App(ctk.CTk):
     def on_moving_press(self, position, drone_num):
         print ("Nice click on 1 ")
         position_to_direction = {
-            "NW": "NorthWest",
-            "N": "North",
-            "NE": "NorthEast",
-            "W": "West",
-            "E": "East",
-            "SW": "SouthWest",
-            "S": "South",
-            "SE": "SouthEast"
+            "N": "Forward",
+            "W": "Left",
+            "E": "Right",
+            "S": "Back",
         }
         payload = position_to_direction.get(position)
 
         time.sleep(0.1)
 
-        self.client.publish("miMain/autopilotService" + str(drone_num + 1) + "/go", payload)
-    def on_moving_release(self, drone_num):
-        print("Nice click on 2 ")
-       #self.client.publish("miMain/autopilotService" + str(drone_num + 1) + "/stopGo")
+        self.client.publish("miMain/autopilotService" + str(drone_num + 1) + "/move", payload)
+
 
 
 
@@ -500,6 +501,7 @@ class App(ctk.CTk):
                 # Fence_Enabled
                 optionMenu_fence_enabled = self.config_optionMenu_frame(Drone, "Fence_Enabled", "Fence status",
                                              1, ["Enabled", "Disabled"])
+
 
                 # Geofence_Margin
                 entry_geofence_margin, slider_geofence_margin = self.config_slider_frame(Drone, "Geofence_Margin", "Geofence margin", 2,
@@ -583,7 +585,6 @@ class App(ctk.CTk):
         optionMenu.place(x=TextBoxPositionX, y=TextHeight)
         optionMenu.set(currentAttributeValue)
 
-
         Frame.grid(row=row_position, column=0, padx=Padx_Frame, pady=Pady_Frame)
         Frame.grid_propagate(False)
         self.DroneSettingsFrames_1.append(Frame)
@@ -646,9 +647,35 @@ class App(ctk.CTk):
                                                                                           entry))
         Frame.grid(row=row_position, column=0, padx=Padx_Frame, pady=Pady_Frame)
         Frame.grid_propagate(False)
+
         self.DroneSettingsFrames_1.append(Frame)
         return entry, slider
+    def update_config_frame(self, Drone):
 
+        self.DroneSettingsValues[Drone.DroneId][0].delete(0, ctk.END)
+        self.DroneSettingsValues[Drone.DroneId][0].insert(0, str(Drone.Fence_Altitude_Max))
+        self.DroneSettingsValues[Drone.DroneId][1].set(float(Drone.Fence_Altitude_Max))
+
+        ConvertedParam1 = "Enabled" if Drone.Fence_Enabled==1 else "Disabled"
+        self.DroneSettingsValues[Drone.DroneId][2].set(ConvertedParam1)
+
+        self.DroneSettingsValues[Drone.DroneId][3].delete(0, ctk.END)
+        self.DroneSettingsValues[Drone.DroneId][3].insert(0, str(Drone.Geofence_Margin))
+        self.DroneSettingsValues[Drone.DroneId][4].set(float(Drone.Geofence_Margin))
+
+        ConvertedParam2 = "Enabled" if Drone.Geofence_Action == 1 else "Disabled"
+        self.DroneSettingsValues[Drone.DroneId][5].set(ConvertedParam2)
+
+        self.DroneSettingsValues[Drone.DroneId][6].delete(0, ctk.END)
+        self.DroneSettingsValues[Drone.DroneId][6].insert(0, str(Drone.RTL_Altitude))
+        self.DroneSettingsValues[Drone.DroneId][7].set(float(Drone.RTL_Altitude))
+
+        self.DroneSettingsValues[Drone.DroneId][8].delete(0, ctk.END)
+        self.DroneSettingsValues[Drone.DroneId][8].insert(0, str(Drone.Pilot_Speed_Up))
+        self.DroneSettingsValues[Drone.DroneId][9].set(float(Drone.Pilot_Speed_Up))
+
+        ConvertedParam3 = "RTL" if Drone.Geofence_Action == 1 else "Land"
+        self.DroneSettingsValues[Drone.DroneId][10].set(ConvertedParam3)
     def update_entry_from_slider(self, value, Drone, droneDataAttribute, entry):
         entry.delete(0, ctk.END)
         entry.insert(0, str(value))
@@ -662,7 +689,6 @@ class App(ctk.CTk):
 
     def show_drone_config_panels(self):
 
-        self.disconnectAll()
         for i in range(1, 5):
             drone_settings_panel_name = f'DroneSettingsPanel_{i}'
             drone_panel = getattr(self, drone_settings_panel_name)
@@ -698,7 +724,6 @@ class App(ctk.CTk):
         self.show_drone_config_panels()
 
     def restore_default_view(self):
-        self.disconnectAll()
         self.DroneConfigPanel.grid_remove()
         self.GeofencePanel.grid(row=0, column=1, padx=(0, 0), pady=0)
         self.SelectionPanel.grid(row=0, column=0, padx=(0, 10), pady=0)
@@ -1272,15 +1297,7 @@ class App(ctk.CTk):
         for callback in self.callbacks:
             callback(new_value)
 
-    def disconnectAll(self):
-        print("Disconnecting all drones...")
-        self.client.publish("miMain/autopilotService/disconnect")
-        self.client.publish("miMain/autopilotService2/disconnect")
-        self.client.publish("miMain/autopilotService3/disconnect")
-        self.client.publish("miMain/autopilotService4/disconnect")
 
-    def exit_handler(self):
-        self.disconnectAll()
 
 
 root = App()

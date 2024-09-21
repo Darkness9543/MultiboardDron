@@ -1,16 +1,13 @@
-import json
+
 import math
 import threading
 import time
-
-from pymavlink import mavutil
 
 
 def _send_telemetry_info(self, process_telemetry_info):
     self.alt = 0
     self.sendTelemetryInfo = True
     while self.sendTelemetryInfo:
-        #msg = self.vehicle.recv_match(type='AHRS2', blocking= True).to_dict()
         msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking= True, timeout = 3)
         if msg:
             msg = msg.to_dict()
@@ -30,7 +27,7 @@ def _send_telemetry_info(self, process_telemetry_info):
                 'heading': self.heading,
                 'state': self.state
             }
-
+            #print ('global ', telemetry_info)
 
 
 
@@ -38,8 +35,7 @@ def _send_telemetry_info(self, process_telemetry_info):
                 process_telemetry_info (telemetry_info)
             else:
                 process_telemetry_info (self.id, telemetry_info)
-        time.sleep(1)
-
+        time.sleep(0.25)
 
 def send_telemetry_info(self, process_telemetry_info):
     telemetryThread = threading.Thread(target=self._send_telemetry_info, args=[process_telemetry_info,])

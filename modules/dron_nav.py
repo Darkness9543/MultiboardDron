@@ -17,9 +17,7 @@ def _prepare_command(self, velocity_x, velocity_y, velocity_z, bodyRef = False):
     """
     Move vehicle in direction based on specified velocity vectors.
     """
-    print ('3 vamos ', bodyRef)
     if bodyRef:
-        print ('body')
         msg = mavutil.mavlink.MAVLink_set_position_target_local_ned_message(
             10,  # time_boot_ms (not used)
             self.vehicle.target_system,
@@ -40,7 +38,6 @@ def _prepare_command(self, velocity_x, velocity_y, velocity_z, bodyRef = False):
         )  # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
 
     else:
-        print ('local ned')
         msg =  mavutil.mavlink.MAVLink_set_position_target_global_int_message(
             10,  # time_boot_ms (not used)
             self.vehicle.target_system,
@@ -63,19 +60,21 @@ def _prepare_command(self, velocity_x, velocity_y, velocity_z, bodyRef = False):
     return msg
 
 
-def _startGo(self):
+def _goingTread(self):
     self.cmd = self._prepare_command(0, 0, 0)
     while self.going:
         self.vehicle.mav.send(self.cmd)
-        time.sleep(1)
+        time.sleep(0.25)
     self.cmd = self._prepare_command(0, 0, 0)
     time.sleep(1)
-def startGo(self):
+
+def _startGo(self):
     if self.state == 'flying':
         self.going = True
-        startGoThread = threading.Thread(target=self._startGo)
+        startGoThread = threading.Thread(target=self._goingTread)
         startGoThread.start()
-def stopGo(self):
+
+def _stopGo(self):
     self.going = False
 
 def fixHeading (self):
@@ -105,8 +104,11 @@ def changeHeading (self, absoluteDegrees):
 def changeNavSpeed (self, speed):
     self.navSpeed = speed
     self.go (self.direction)
+
 def go(self, direction):
     speed = self.navSpeed
+    if not self.going:
+        self._startGo()
     self.direction = direction
     if self.going:
         if direction == "North":
@@ -118,7 +120,7 @@ def go(self, direction):
         if direction == "West":
             self.cmd = self._prepare_command(0, -speed, 0)  # WEST
         if direction == "NorthWest":
-            self.cmd = self._prepare_command(speed, -speed, 0)  # NORTHWEST  Root?
+            self.cmd = self._prepare_command(speed, -speed, 0)  # NORTHWEST
         if direction == "NorthEast":
             self.cmd = self._prepare_command(speed, speed, 0)  # NORTHEST
         if direction == "SouthWest":
@@ -130,14 +132,15 @@ def go(self, direction):
         if direction == "Forward":
             self.cmd = self._prepare_command(speed, 0, 0, bodyRef = True)
         if direction == "Back":
-            self.cmd = self._prepare_command(-speed, 0, 0, bodyRef=True)
+            self.cmd = self._prepare_command(-speed, 0, bodyRef=True)
         if direction == "Left":
             self.cmd = self._prepare_command(0, speed, 0, bodyRef=True)
         if direction == "Right":
-            self.cmd = self._prepare_command(0, -speed, 0, 0, bodyRef=True)
+            self.cmd = self._prepare_command(0, -speed, 0, bodyRef=True)
         if direction == "Up":
             self.cmd = self._prepare_command(0, 0, -speed, bodyRef=True)
         if direction == "Down":
             self.cmd = self._prepare_command(0, 0, speed, bodyRef=True)
+
 
 

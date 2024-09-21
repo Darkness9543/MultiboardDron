@@ -16,6 +16,7 @@ def _send_local_telemetry_info(self, process_local_telemetry_info):
 
 
     self.sendLocalTelemetryInfo = True
+    print ('empiezo con la telemetria local')
     while self.sendLocalTelemetryInfo:
         msg = self.vehicle.recv_match(type='LOCAL_POSITION_NED', blocking=True, timeout = 3)
 
@@ -32,13 +33,12 @@ def _send_local_telemetry_info(self, process_local_telemetry_info):
                 'posY': msg.y,
                 'posZ': msg.z,
             }
-            print ('local telemetry ', local_telemetry_info)
-
+            #print (' local ', local_telemetry_info)
             if self.id == None:
                 process_local_telemetry_info (local_telemetry_info)
             else:
                 process_local_telemetry_info (self.id, local_telemetry_info)
-            time.sleep (1)
+            time.sleep (0.25)
 
 
 def send_local_telemetry_info(self, process_local_telemetry_info):

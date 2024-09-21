@@ -14,6 +14,7 @@ def _distanceToDestinationInMeters(self, lat,lon):
     return math.sqrt((dlat * dlat) + (dlong * dlong)) * 1.113195e5
 
 def _goto (self, lat, lon, alt, callback=None, params = None):
+    self._stopGo()
     self.vehicle.mav.send(
         mavutil.mavlink.MAVLink_set_position_target_global_int_message(10, self.vehicle.target_system,
                                                                        self.vehicle.target_component,

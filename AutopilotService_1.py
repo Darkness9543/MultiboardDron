@@ -3,7 +3,7 @@ import time
 
 import paho.mqtt.client as mqtt
 import json
-from modules.Dron import Dron
+from Dron import Dron
 
 
 def publish_telemetry_info(telemetry_info):
@@ -33,7 +33,7 @@ def on_message(cli, userdata, message):
     command = splited[2]  # aqui tengo el comando
 
     sending_topic = "autopilotService1/" + origin  # lo necesitaré para enviar las respuestas
-    print (f" Recieved command '{command}'")
+    print(f" Recieved command '{command}'")
 
     print(f"Drone state '{dron.state}'")
 
@@ -41,29 +41,30 @@ def on_message(cli, userdata, message):
         print('vamos a conectar')
         connection_string = 'tcp:127.0.0.1:5763'
         baud = 115200
-        dron.connect(connection_string, baud)
-        dron.state = "conectado"
+        dron.connect( connection_string, baud)
+        dron.state = "connected"
         publish_event('connected')
 
     if command == 'startTelemetry':
-        dron.send_telemetry_info(publish_telemetry_info)
+        dron.send_telemetry_info( publish_telemetry_info)
 
     if command == 'stopTelemetry':
         dron.stop_sending_telemetry_info()
 
     if command == 'getParameters':
         print('pido parametros')
-        if dron.state == 'conectado':
+        if dron.state == 'connected':
             dron.getParams(message.payload, blocking=False,
                            callback=publish_parameters)  # tiene que enviar una respuesta
 
     if command == 'setParameters':
-        if dron.state == 'conectado':
-            dron.setParams(message.payload)
+        if dron.state == 'connected':
+            dron.setParams( message.payload)
 
     if command == 'arm':
-        if dron.state == 'conectado':
-            dron.arm()
+        if dron.state == 'connected':
+            print("armando")
+            dron.arm(blocking=False)
             publish_event('armed')
 
     if command == 'takeOff':
@@ -74,25 +75,16 @@ def on_message(cli, userdata, message):
 
     if command == 'RTL':
         if dron.state == 'flying':  # PONIA VOLANDO PERO ERA volando
-            dron.RTL()
+            dron.RTL(blocking=False)
 
     if command == 'Land':
         if dron.state == 'flying':
             dron.Land(blocking=False, callback=publish_event, params='landed')
 
-    if command == 'startGo':
+    if command == 'move':
         if dron.state == 'flying':
-            dron.startGo()
-
-    if command == 'stopGo':
-        if dron.state == 'flying':
-            dron.stopGo()
-
-    if command == 'go':
-        if dron.state == ('flyingç'
-                          ''):
             direction = message.payload.decode("utf-8")
-            dron.go(direction)
+            dron.move(direction)
 
 
 def on_connect(client, userdata, flags, rc):
