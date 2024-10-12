@@ -3,6 +3,7 @@ import time
 from pymavlink import mavutil
 
 def _goDown(self, mode, callback=None, params = None):
+    # detemenos el modo navegación
     self._stopGo()
 
     # Get mode ID
@@ -11,21 +12,20 @@ def _goDown(self, mode, callback=None, params = None):
         self.vehicle.target_system,
         mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
         mode_id)
-
+    # esperamos a que el dron esté en tierra
     while True:
-        msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking=True, timeout = 3)
+        msg = self.message_handler.wait_for_message('GLOBAL_POSITION_INT', timeout=3)
+
         if msg:
             msg = msg.to_dict()
             alt = float(msg['relative_alt'] / 1000)
-            print (alt)
             if alt < 0.5:
                 break
-            time.sleep(0.25)
+            time.sleep(0.1)
 
     self.vehicle.motors_disarmed_wait()
     self.state = "connected"
     if callback != None:
-        print ('llamo al call back')
         if self.id == None:
             if params == None:
                 callback()
@@ -56,7 +56,7 @@ def Land (self, blocking=True, callback=None, params = None):
         if blocking:
             self._goDown('LAND')
         else:
-            print ('pongo en marcha el thread para land')
+            print ('aterrizo el dron ', self.id)
             goingDownThread = threading.Thread(target=self._goDown, args=['LAND', callback, params])
             goingDownThread.start()
         return True

@@ -1,6 +1,7 @@
 
 class Dron(object):
-    def __init__(self):
+    def __init__(self, id = None):
+        self.id = id
 
         self.state = "disconnected"
         ''' los otros estados son:
@@ -15,32 +16,31 @@ class Dron(object):
         self.lat = 0
         self.lon = 0
         self.alt = 0
+        self.groundSpeed = 0
 
+        self.frequency = None  #numero de muestras de telemetría por segundo
 
         self.going = False # se usa en dron_nav
         self.navSpeed = 5 # se usa en dron_nav
         self.direction = 'Stop' # se usa en dron_nav
-        self.id = None
+
         self.sendTelemetryInfo = False #usado en dron_telemetry
 
         self.sendLocalTelemetryInfo = False  # usado en dron_local_telemetry
 
         self.step = 1 # se usa en dron_mov. Son los metros que mueve en cada paso
-        self.localGeofence = None # se usa en dron_mov para evitar que el dron se salga del espacio
-        self.localGeofenceEnabled = False
-        self.localGeofenceChecking = False
-        self.localGeofenceBreachAction = 0
-        # REVISAR ESTO
-        #   0     Informar
-        #   1     Informar y detener
-        #   2     Informar y aterrizar inmediatamente
-        self.localGeofenceBreachCallback = None # función que se activará cuando haya el breach
-        self.localGeofenceBreachCallbackParams = None # parámetros para la función anterior
+
         self.position = [0,0,0] # se usa en dron_mov para identificar la posición del dron dentro del espacio
         self.heading = 0
         self.lastDirection = None
+        self.flightMode = None
+        self.minAltGeofence = 0
+        self.takeTelemetry = False
 
-        self.lastPositionBeforeLocalGeofenceBreach = None
+        self.message_handler = None
+        # se usa para parar la captura de datos de telemetria para que no molesten cuando quiero
+        # leer parámetros
+
     # aqui se importan los métodos de la clase Dron, que están organizados en ficheros.
     # Así podría orgenizarse la aportación de futuros alumnos que necesitasen incorporar nuevos servicios
     # para sus aplicaciones. Crearían un fichero con sus nuevos métodos y lo importarían aquí
@@ -48,21 +48,20 @@ class Dron(object):
     # ese atributo hay que declararlo aqui y no en el fichero con los métodos nuevos.
     # Ese es el caso del atributo going, que lo tengo que declarar aqui y preferiría poder declararlo en el fichero dron_goto
 
-    from modules.dron_connect import connect, _connect, disconnect, _handle_heartbeat
+    from modules.dron_connect import connect, _connect, disconnect, _handle_heartbeat, _record_telemetry_info, _record_local_telemetry_info
     from modules.dron_arm import arm, _arm
     from modules.dron_takeOff import takeOff, _takeOff
     from modules.dron_RTL_Land import  RTL, Land, _goDown
-    from modules.dron_nav import _prepare_command, go, _startGo, _stopGo, _goingTread, changeHeading, fixHeading, unfixHeading, changeNavSpeed
+    from modules.dron_nav import _prepare_command, go, _startGo, _stopGo, _goingTread, changeHeading, _changeHeading, unfixHeading, changeNavSpeed
     from modules.dron_goto import goto, _goto, _distanceToDestinationInMeters
-    from modules.dron_flightPlan import executeFlightPlan, _executeFlightPlan
     from modules.dron_parameters import getParams, _getParams, setParams, _setParams
-    from modules.dron_setGeofence import setGEOFence, _setGEOFence, getGEOFence, _getGEOFence
+    from modules.dron_geofence import  setScenario, _setScenario, getScenario, _getScenario, _buildScenario
     from modules.dron_telemetry import send_telemetry_info, _send_telemetry_info, stop_sending_telemetry_info
 
     from modules.dron_local_telemetry import send_local_telemetry_info, _send_local_telemetry_info, stop_sending_local_telemetry_info
-    from modules.dron_mov import move, _move, _prepare_command_mov, setStep, moveto, _moveto, _prepare_command_movto
-    from modules.dron_mov import  _futurePosition, check, _distance, _destination,setNavSpeed, _recover
-    from modules.dron_mission import executeMission, _executeMission
-    from modules.dron_localGeofence import enableLocalGeofence, disableLocalGeofence, setLocalGeofenceBreachAction, setLocalGeofence, _inGeofence, _localGeofenceCheck, startLocalGeofenceChecking, stopLocalGeofenceChecking, _goToLastPositionBeforeLocalGeofenceBreach
-
-    from modules.dron_RC_overrride import send_rc, status_loop, get_thruster_outputs, clear_motion
+    from modules.dron_mission import executeMission, _executeMission, uploadMission, _uploadMission, _getMission, getMission
+    from modules.dron_altitude import change_altitude, _change_altitude
+    from modules.dron_drop import drop
+    from modules.dron_move import move_distance, _move_distance, _prepare_command_mov,setMoveSpeed
+    from modules.dron_bottomGeofence  import startBottomGeofence, stopBottomGeofence,  _minAltChecking
+    from modules.message_handler import MessageHandler

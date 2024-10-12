@@ -1,7 +1,4 @@
 import threading
-import time
-
-
 from pymavlink import mavutil
 
 
@@ -18,7 +15,6 @@ def _arm(self, callback=None, params = None):
 
     self.vehicle.mav.command_long_send(self.vehicle.target_system, self.vehicle.target_component,
                                          mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0, 1, 0, 0, 0, 0, 0, 0)
-
     msg = self.vehicle.recv_match(type='COMMAND_ACK', blocking=True,  timeout=3)
     self.vehicle.motors_armed_wait()
     self.state = "armed"

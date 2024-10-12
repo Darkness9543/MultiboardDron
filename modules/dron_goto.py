@@ -14,6 +14,7 @@ def _distanceToDestinationInMeters(self, lat,lon):
     return math.sqrt((dlat * dlat) + (dlong * dlong)) * 1.113195e5
 
 def _goto (self, lat, lon, alt, callback=None, params = None):
+    # detenemos el modo navegación
     self._stopGo()
     self.vehicle.mav.send(
         mavutil.mavlink.MAVLink_set_position_target_global_int_message(10, self.vehicle.target_system,
@@ -27,8 +28,9 @@ def _goto (self, lat, lon, alt, callback=None, params = None):
 
     dist = self._distanceToDestinationInMeters(lat ,lon)
     distanceThreshold = 0.5
+    # esperamos hasta que estemos suficientemente cerca del destino
     while dist > distanceThreshold:
-        time.sleep(0.25)
+        time.sleep(0.1)
         dist = self._distanceToDestinationInMeters(lat, lon)
 
     if callback != None:

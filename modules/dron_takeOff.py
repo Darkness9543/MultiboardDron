@@ -7,13 +7,13 @@ def _takeOff(self, aTargetAltitude,callback=None, params = None):
     self.vehicle.mav.command_long_send(self.vehicle.target_system, self.vehicle.target_component,
                                          mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, aTargetAltitude)
 
+    # espero en este bucle hasta que se ha alcanzado a altura indicada
     while True:
         msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking=True, timeout=3)
         if msg:
             msg = msg.to_dict()
             alt = float(msg['relative_alt'] / 1000)
             if alt >= aTargetAltitude * 0.90:
-                print("Reached target altitude")
                 break
             time.sleep(0.25)
 

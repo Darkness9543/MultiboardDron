@@ -1,5 +1,7 @@
+from GeofenceClass import Geofence
 class DroneInfo:
     def __init__(self,
+                 geofence: Geofence = None,
                  DroneId: int = 0,
                  Status: str = "disconnected",
                  Fence_Altitude_Max: float = 0,
@@ -13,7 +15,8 @@ class DroneInfo:
                  Alt: float = 0,
                  State: float = 0,
                  Lat: float = 0,
-                 Lon: float = 0
+                 Lon: float = 0,
+                 Heading: float = 0
                  ):
         self.DroneId = DroneId
         self.Status = Status
@@ -30,6 +33,9 @@ class DroneInfo:
         self.state = State
         self.lat = Lat
         self.lon = Lon
+        self.heading = Heading
+
+        self.geofence = geofence
 
     def setDroneInfoParameters(self, Fence_Altitude_Max, Fence_Enabled, Geofence_Margin, Geofence_Action, RTL_Altitude,
                                Pilot_Speed_Up, FLTMode6):
@@ -41,9 +47,5 @@ class DroneInfo:
         self.Pilot_Speed_Up = Pilot_Speed_Up
         self.FLTMode6 = FLTMode6
 
-    def setTelemetryInfo(self, Vel, Alt, State, Lat, Lon):
-        self.vel = Vel
-        self.alt = Alt
-        self.state = State
-        self.lat = Lat
-        self.lon = Lon
+    def setTelemetryInfo(self, value, parameter):
+        setattr(self, parameter, value)

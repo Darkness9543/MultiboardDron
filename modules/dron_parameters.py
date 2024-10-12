@@ -5,34 +5,33 @@ import pymavlink.dialects.v20.all as dialect
 
 
 def _getParams(self,parameters,  callback=None):
-    #parameters = json.loads(parameters)
-    parameters = ['FENCE_ALT_MAX', 'FENCE_ENABLE', 'FENCE_MARGIN', 'FENCE_ACTION',
-                  "RTL_ALT", "PILOT_SPEED_UP", 'FLTMODE6']
+    # detengo la toma de datos de telemetria para que no interfiera con la lectura
+    # de parametros, porque si no se hace asi, esa lectura puede ser muy lenta
+    self.takeTelemetry = False
     result = []
     for PARAM in parameters:
         ready = False
         while not ready:
-            print("Requesting...")
+            # pido el valor del siguiente parámetro de la lista
             self.vehicle.mav.param_request_read_send(
                 self.vehicle.target_system, self.vehicle.target_component,
                 PARAM.encode(encoding="utf-8"),
                 -1
             )
-            print("After request")
-            message = self.vehicle.recv_match(type='PARAM_VALUE', blocking=True).to_dict()
-            print("After message")
-            if message['param_id'] == PARAM:
-                ready = True
-            print("After if")
+            # y espero que llegue el valor. Si no llega en 3 segundos insisto.
+            message = self.message_handler.wait_for_message('PARAM_VALUE', timeout=3)
+            if message:
+                message = message.to_dict()
+                if message['param_id'] == PARAM:
+                    ready = True
+        # añado el valor a la lista
         result.append({
             message['param_id']: message["param_value"]
         })
-        print("After append")
-        print('ya tengo el siguiente')
-        print("\n")
-
-    print('ya están todos')
+        print ('ya tengo otro')
     print (result)
+    # reactivo la toma de datos de telemetria
+    self.takeTelemetry = True
 
     if callback != None:
         if self.id == None:
@@ -54,7 +53,6 @@ def getParams(self, parameters, blocking=True, callback=None):
 
 
 def _setParams(self,parameters,  callback=None, params = None):
-    parameters = json.loads(parameters)
     for PARAM in parameters:
 
         message = dialect.MAVLink_param_set_message(target_system=self.vehicle.target_system,

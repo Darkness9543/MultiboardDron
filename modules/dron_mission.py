@@ -3,14 +3,57 @@ import math
 import threading
 import time
 from pymavlink import mavutil
-from modules.dron_goto import _goto, goto
-from modules.dron_RTL_Land import _goDown
-from modules.dron_arm import _arm
-from modules.dron_takeOff import  _takeOff
+
+from pymavlink import mavutil
+
+def _getMission (self, callback=None, params = None):
+    mission = None
+    # Solicitar la misión (waypoints) al autopiloto
+    self.vehicle.mav.mission_request_list_send( self.vehicle.target_system,  self.vehicle.target_component)
+    while True:
+        # Esperar los mensajes
+        msg =  self.vehicle.recv_match(blocking=True)
+
+        # Verificar el tipo de mensaje recibido
+        if msg.get_type() == 'MISSION_COUNT':
+            # Número de waypoints
+            count = msg.count
+            print ('count: ', count)
+            if count < 2:
+                # no hay misión
+                return None
+            # Solicitar cada waypoint
+            for i in range(count):
+                self.vehicle.mav.mission_request_int_send( self.vehicle.target_system,  self.vehicle.target_component, i)
+
+        elif msg.get_type() == 'MISSION_ITEM_INT':
+            # el mensaje ya trae un waypoint
+            # el que tiene numero de secuencia lo ignoro
+            if msg.seq == 1:
+                # este es el waypoint que indica la altura de despeque
+                mission = {
+                    'takeOffAlt': msg.z,
+                    'waypoints': []
+                }
+            elif msg.seq in range (2, count-1):
+                # estos son los waypoints que hay que volar
+                mission ['waypoints'].append ({'lat':msg.x * 1e-7, 'lon':msg.y * 1e-7, 'alt':msg.z })
+                print ('mission: ', mission)
+            elif msg.seq == count-1:
+                # este waypoint es el RTL
+                break
+    print ('resulado: ', mission)
+    if callback != None:
+        if self.id == None:
+            callback(mission)
+        else:
+            callback(self.id, mission)
+    else:
+        return mission
 
 
-def _executeMission (self, mission, callback=None, params = None):
-    '''La mision debe especificarse en json, de acuerdo con el formato de este ejemplo:
+def _uploadMission (self, mission, callback=None, params = None):
+    '''La mision debe especificarse con el formato de este ejemplo:
         {
             "takeOffAlt": 5,
             "waypoints":
@@ -50,13 +93,14 @@ def _executeMission (self, mission, callback=None, params = None):
         self.vehicle.target_component,
         mavutil.mavlink.MAV_CMD_GET_HOME_POSITION,
         0, 0, 0, 0, 0, 0, 0, 0)
-
+    print ('voy a pedir el home')
     msg = self.vehicle.recv_match(type='HOME_POSITION', blocking=True)
     msg = msg.to_dict()
     lat = msg['latitude']
     lon = msg['longitude']
     alt = msg['altitude']
 
+    print ('ya tengo el home')
 
     # añadimos este primer waypoint a la mision
     wploader.append(mavutil.mavlink.MAVLink_mission_item_int_message(
@@ -100,60 +144,28 @@ def _executeMission (self, mission, callback=None, params = None):
     ))
     # borramos la misión que tiene ahora el autopiloto
     self.vehicle.mav.mission_clear_all_send( self.vehicle.target_system,  self.vehicle.target_component)
-
-    ack = self.vehicle.recv_match(type='MISSION_ACK', blocking=True)
-
+    msg = None
+    while not msg:
+        msg = self.vehicle.recv_match(type='MISSION_ACK', blocking=True, timeout = 3)
     # Enviamos el numero de items de la nueva misión
     self.vehicle.waypoint_count_send(len(wploader))
 
     # Enviamos los items
+    print ('vamos a enviar los items')
 
     for i in range(len(wploader)):
-
-        msg = self.vehicle.recv_match(type=['MISSION_REQUEST_INT', 'MISSION_REQUEST'], blocking=True)
-
+        msg = self.vehicle.recv_match(type=['MISSION_REQUEST_INT', 'MISSION_REQUEST'], blocking=True, timeout = 3)
         print(f'Sending waypoint {msg.seq}/{len(wploader) - 1}')
         self.vehicle.mav.send(wploader[msg.seq])
 
         if msg.seq == len(wploader) - 1:
             break
 
+    msg = None
+    while not msg:
+        msg = self.vehicle.recv_match(type='MISSION_ACK', blocking=True, timeout = 3)
 
-    ack = self.vehicle.recv_match(type='MISSION_ACK', blocking=True)
 
-    # armamos y damos la orden de ejecutar la misión
-
-    mode = 'GUIDED'
-    # Get mode ID
-    mode_id = self.vehicle.mode_mapping()[mode]
-    self.vehicle.mav.set_mode_send(
-        self.vehicle.target_system,
-        mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
-        mode_id)
-    arm_msg = self.vehicle.recv_match(type='COMMAND_ACK', blocking=True)
-
-    self.vehicle.mav.command_long_send(self.vehicle.target_system, self.vehicle.target_component,
-                                         mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0, 1, 0, 0, 0, 0, 0, 0)
-    self.vehicle.motors_armed_wait()
-
-    self.vehicle.mav.command_long_send(
-        self.vehicle.target_system,
-        self.vehicle.target_component,
-        mavutil.mavlink.MAV_CMD_MISSION_START,
-        0, 0, 0, 0, 0, 0, 0, 0)
-    self.state = 'flying'
-    # esperamos a que acabe la mision
-    time.sleep(10)
-    while True:
-        msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking=True, timeout = 3)
-        if msg:
-            msg = msg.to_dict()
-            alt = float(msg['relative_alt'] / 1000)
-            print(alt)
-            if alt < 0.5:
-                break
-        time.sleep(1)
-    self.state = 'connected'
     if callback != None:
         if self.id == None:
             if params == None:
@@ -169,9 +181,71 @@ def _executeMission (self, mission, callback=None, params = None):
 
 
 
-def executeMission(self,flightPlan, blocking=True, callback=None, params = None):
+def _executeMission (self, callback=None, params = None):
+
+    mode = 'GUIDED'
+    # Get mode ID
+    mode_id = self.vehicle.mode_mapping()[mode]
+    self.vehicle.mav.set_mode_send(
+        self.vehicle.target_system,
+        mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+        mode_id)
+    arm_msg = self.vehicle.recv_match(type='COMMAND_ACK', blocking=True, timeout =3)
+
+
+    self.vehicle.mav.command_long_send(self.vehicle.target_system, self.vehicle.target_component,
+                                         mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0, 1, 0, 0, 0, 0, 0, 0)
+    self.vehicle.motors_armed_wait()
+
+    self.vehicle.mav.command_long_send(
+        self.vehicle.target_system,
+        self.vehicle.target_component,
+        mavutil.mavlink.MAV_CMD_MISSION_START,
+        0, 0, 0, 0, 0, 0, 0, 0)
+
+    self.state = 'flying'
+    # esperamos a que acabe la mision
+    time.sleep(10)
+    while True:
+        msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking=True, timeout = 3)
+        if msg:
+            msg = msg.to_dict()
+            alt = float(msg['relative_alt'] / 1000)
+            if alt < 0.5:
+                break
+        time.sleep(0.1)
+    self.state = 'connected'
+    if callback != None:
+        if self.id == None:
+            if params == None:
+                callback()
+            else:
+                callback(params)
+        else:
+            if params == None:
+                callback(self.id)
+            else:
+                callback(self.id, params)
+
+
+def uploadMission(self,mission, blocking=True, callback=None, params = None):
     if blocking:
-        self._executeMission(flightPlan)
+        self._uploadMission(mission)
     else:
-        missionThread = threading.Thread(target=self._executeMission, args=[flightPlan, callback, params])
+        missionThread = threading.Thread(target=self._uploadMission, args=[mission, callback, params])
         missionThread.start()
+
+
+def executeMission(self, blocking=True, callback=None, params = None):
+    if blocking:
+        self._executeMission()
+    else:
+        missionThread = threading.Thread(target=self._executeMission, args=[callback, params])
+        missionThread.start()
+
+def getMission(self, blocking=True, callback=None, params = None):
+    if blocking:
+        return self._getMission()
+    else:
+        getMissionThread = threading.Thread(target=self._getMission, args=[callback, params])
+        getMissionThread.start()

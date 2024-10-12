@@ -1,67 +1,76 @@
-import json
 import math
 import threading
 import time
 
+from modules.message_handler import MessageHandler
 from pymavlink import mavutil
 
 ''' Esta función sirve exclusivamente para detectar cuándo el dron se desarma porque 
 ha pasado mucho tiempo desde que se armó sin despegar'''
-# QUIZA HAY OTRA FORMA MAS SIMPLE DE DETECTAR ESO
-def _handle_heartbeat(self):
-    while self.state != 'disconnected':
-        msg = self.vehicle.recv_match(
-            type='HEARTBEAT', blocking=True)
-        if msg.base_mode == 89 and self.state == 'armed' :
+
+
+def _handle_heartbeat(self, msg):
+    if self.takeTelemetry:
+        if msg.base_mode == 89 and self.state == 'armed':
             self.state = 'connected'
-        time.sleep (0.25)
+        mode = mavutil.mode_string_v10(msg)
+        if not 'Mode(0x000000' in str(mode):
+            self.flightMode = mode
 
 
-# Some more small functions
+def _record_telemetry_info(self, msg):
+    if self.takeTelemetry and msg:
+        msg = msg.to_dict()
+
+        self.lat = float(msg['lat'] / 10 ** 7)
+        self.lon = float(msg['lon'] / 10 ** 7)
+        self.alt = float(msg['relative_alt'] / 1000)
+        self.heading = float(msg['hdg'] / 100)
+        if self.state == 'connected' and self.alt > 0.5:
+            self.state = 'flying'
+        if self.state == 'flying' and self.alt < 0.5:
+            self.state = 'connected'
+        vx = float(msg['vx'])
+        vy = float(msg['vy'])
+        self.groundSpeed = math.sqrt(vx * vx + vy * vy) / 100
+
+
+
+def _record_local_telemetry_info(self, msg):
+    if self.takeTelemetry and msg:
+        self.position = [msg.x, msg.y, msg.z]
+
 def _connect(self, connection_string, baud, callback=None, params=None):
     self.vehicle = mavutil.mavlink_connection(connection_string, baud)
     self.vehicle.wait_heartbeat()
     self.state = "connected"
-    # pongo en marcha el thread para detectar el desarmado por innacción
-    handleThread = threading.Thread (target = self._handle_heartbeat)
-    handleThread.start()
+    self.takeTelemetry = True
 
+    self.message_handler = MessageHandler(self.vehicle)
 
-    # lo que viene a continuación es para pedir que nos envíe periodicamente datos de telemetría global
-    # y datos de telemetría local
-    # LAS FRECUENCIAS PODRIAN SER PARÁMETROS DE LA CONEXIÓN
-    # A VECES SOSPECHO QUE EL SIMULADOR SE SATURA AL ENVIAR TANTO DATO Y LLEGAN CON RETRASO A LA APLICACIÓN
-    # HABRÍA QUE VER SI EN PRODUCCIÓN PASA LO MISMO
-    # CREO QUE ESO PASA CUANDO LA FRECUENCIA CON LA QUE PIDO QUE ENVIE DATOS NO COINCIDE CON LA FRECUENCIA CON LA QUE LOS LEO
-    # TAMBIEN TENGO DUDAS EN ESTO: PODRIA INICIAR AQUI EN ENVIO DE DATOS DE TELEMETRIA. PARA ELLO TENDRÍA
-    # QUE RECIBIR COMO PARAMETROS LOS CALLBACKS. TAL Y COMO ESTÁ AHORA, EL USUARIO TIENE QUE PEDIR LOS
-    # DATOS DE TELEMETRIA DESPUES DE CONECTARSE, SI ES QUE LOS QUIERE, USANDO LAS FUNCIONES APROPIADAS.
-    # NO SE QUÉ ES MEJOR
+    self.message_handler.register_handler('HEARTBEAT', self._handle_heartbeat)
+    self.message_handler.register_handler('GLOBAL_POSITION_INT', self._record_telemetry_info)
+    self.message_handler.register_handler('LOCAL_POSITION_NED', self._record_local_telemetry_info)
 
     # Pido datos globales
-    frequency_hz = 4
     self.vehicle.mav.command_long_send(
         self.vehicle.target_system, self.vehicle.target_component,
         mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0,
-        mavutil.mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT,  # The MAVLink message ID
-        1e6 / frequency_hz,
-        # The interval between two messages in microseconds. Set to -1 to disable and 0 to request default rate.
+        mavutil.mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT,
+        1e6 / self.frequency,  # frecuencia con la que queremos paquetes de telemetría
         0, 0, 0, 0,  # Unused parameters
-        0,
-        # Target address of message stream (if message has target address fields). 0: Flight-stack default (recommended), 1: address of requestor, 2: broadcast.
+        0
     )
+    # Pido también datos locales
     self.vehicle.mav.command_long_send(
         self.vehicle.target_system, self.vehicle.target_component,
         mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0,
         mavutil.mavlink.MAVLINK_MSG_ID_LOCAL_POSITION_NED,  # The MAVLink message ID
-        1e6 / frequency_hz,
-        # The interval between two messages in microseconds. Set to -1 to disable and 0 to request default rate.
+        1e6 / self.frequency,
         0, 0, 0, 0,  # Unused parameters
-        0,
-        # Target address of message stream (if message has target address fields). 0: Flight-stack default (recommended), 1: address of requestor, 2: broadcast.
+        0
     )
 
-    print ('dentro ya estoy conectado')
     if callback != None:
         if self.id == None:
             if params == None:
@@ -78,15 +87,15 @@ def _connect(self, connection_string, baud, callback=None, params=None):
 def connect(self,
             connection_string,
             baud,
-            id= None,
+            freq=4,
             blocking=True,
             callback=None,
-            params = None):
+            params=None):
     if self.state == 'disconnected':
-        self.id = id
+        self.frequency = freq
         if blocking:
-            print ('conecto')
             self._connect(connection_string, baud)
+            print('ya estoy conectado')
         else:
             connectThread = threading.Thread(target=self._connect, args=[connection_string, baud, callback, params, ])
             connectThread.start()
@@ -94,13 +103,14 @@ def connect(self,
     else:
         return False
 
-def disconnect (self):
+
+def disconnect(self):
     if self.state == 'connected':
         self.state = "disconnected"
-        # AQUI PARO EL ENVIO DE LOS DATOS DE TELEMETRIA
+        # paramos el envío de datos de telemetría
         self.stop_sending_telemetry_info()
         self.stop_sending_local_telemetry_info()
-        time.sleep (5)
+        time.sleep(1)
         self.vehicle.close()
         return True
     else:
