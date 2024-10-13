@@ -2,7 +2,9 @@ from tkintermapview import TkinterMapView
 from PIL import Image, ImageTk, ImageDraw
 import json
 import math
+
 class DroneMap:
+
     def handle_message(self, message):
         MessageDroneId = int(str(message.topic).split("/")[0].split("autopilotService")[1])
         ReceivedInfoType = str(message.topic).split("/")[2]
@@ -16,6 +18,7 @@ class DroneMap:
                     drone.setTelemetryInfo(payload["lat"], "lat")
                     drone.setTelemetryInfo(payload["lon"], "lon")
                     drone.setTelemetryInfo(payload["heading"], "heading")
+
                     self.move_marker(drone.DroneId, drone.lat, drone.lon, drone.heading)
 
     def __init__(self, parent, client, drones, drone_colors, height, width):
@@ -27,12 +30,12 @@ class DroneMap:
         self.map_widget = TkinterMapView(parent, height=height, width=width)
         self.map_widget.grid(row=0, column=0)
         self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}", max_zoom=22)
-        self.drone_colors = drone_colors
+        self.drone_colors =  [(255, 0, 0, 100), (0, 255, 0, 100)]
 
         # Set initial position and zoom level
         self.map_widget.set_position(41.276448, 1.9888564)
         self.map_widget.set_zoom(20)
-
+        self.geofence_polygons = []
         # Dictionary to store markers
         self.markers = {}
         self.polygons = {}
@@ -91,36 +94,81 @@ class DroneMap:
         new_marker = self.map_widget.set_marker(lat, lon, icon=marker_image)
         self.markers[marker_id] = new_marker
 
-    def draw_geofence(self, coordinates_set, drone_id, color):
+    def draw_geofences(self, coordinates_set):
         """
-        Draws a polygon on the map with the given coordinates, closing the figure by connecting the last and first points.
-        The color of the polygon outline and fill matches the input color, with some transparency.
-        Stores the polygon in a list, as with the markers.
+        Draws geofences on the map. Inclusion zones are drawn in the drone's color with simulated transparency.
+        Exclusion zones are drawn in black.
+
+        :param coordinates_set: List of geofence data.
         """
-        # Transform coordinates_set into a list of tuples (lat, lon)
-        coordinates = [(coord["lat"], coord["lon"]) for coord in coordinates_set]
-        # Ensure the polygon is closed by adding the first point at the end if needed
-        if coordinates[0] != coordinates[-1]:
-            coordinates.append(coordinates[0])
+        # First, hide any existing geofences
+        self.hide_geofences()
 
-        # Convert color name to hex with alpha transparency
-        fill_color = self.drone_colors[drone_id]  # 128 is 50% transparency
-        outline_color = "black"  # Use the solid color for outline
+        # Iterate over the geofence data
+        for idx, shape_group in enumerate(coordinates_set):
+            main_shape_data = shape_group[0]  # First element is the main shape
+            exclusion_shapes_data = shape_group[1:]  # Remaining elements are exclusion shapes
 
-        # Create the polygon on the map
-        polygon = self.map_widget.set_polygon(coordinates, outline_color=outline_color, fill_color=fill_color,
-                                              border_width=1)
-        # Store the polygon in a list or dictionary
-        if drone_id not in self.polygons:
-            self.polygons[drone_id] = []
-        self.polygons[drone_id].append(polygon)
+            # Get the color for the inclusion zone
+            color = self.drone_colors[idx % len(self.drone_colors)]
+            # Adjust the color to simulate transparency (since true transparency isn't supported)
+            adjusted_color = self.adjust_color_for_transparency(color)
+
+            # Process the main shape (inclusion zone)
+            if main_shape_data['type'] == 'polygon':
+                waypoints = main_shape_data['waypoints']
+                positions = [(wp['lat'], wp['lon']) for wp in waypoints]
+
+                # Draw the inclusion polygon
+                polygon = self.map_widget.set_polygon(positions, fill_color=adjusted_color, outline_color=adjusted_color)
+                # Store the polygon for later removal
+                self.geofence_polygons.append(polygon)
+            else:
+                # If you have other shape types like 'circle', handle them here
+                pass  # For this example, only polygons are handled
+
+            # Process exclusion zones
+            for exclusion_shape in exclusion_shapes_data:
+                if exclusion_shape['type'] == 'polygon':
+                    waypoints = exclusion_shape['waypoints']
+                    positions = [(wp['lat'], wp['lon']) for wp in waypoints]
+
+                    # Draw the exclusion polygon in black
+                    polygon = self.map_widget.set_polygon(positions, fill_color='black', outline_color='black')
+                    self.geofence_polygons.append(polygon)
+                else:
+                    # Handle other shape types like 'circle' if needed
+                    pass
 
     def hide_geofences(self):
         """
-        Removes all polygons from the map.
+        Removes all geofences from the map.
         """
-        for drone_id in self.polygons:
-            for polygon in self.polygons[drone_id]:
-                polygon.delete()
-        self.polygons.clear()
+        for polygon in self.geofence_polygons:
+            polygon.delete()
+        self.geofence_polygons.clear()
 
+    def adjust_color_for_transparency(self, color, alpha=100):
+        if isinstance(color, str):
+            # If color is a string (hex), convert it to RGB
+            color = hex_to_rgb(color)
+        """
+        Adjusts the given color to simulate transparency by blending it with white.
+
+        :param color: Tuple (R, G, B, A)
+        :param alpha: Alpha value (0-255)
+        :return: Hex color string
+        """
+        r, g, b, _ = color  # Ignore the original alpha
+        alpha_fraction = alpha / 255.0
+        # Blend the color with white to simulate transparency
+        r_new = int(r * alpha_fraction + 255 * (1 - alpha_fraction))
+        g_new = int(g * alpha_fraction + 255 * (1 - alpha_fraction))
+        b_new = int(b * alpha_fraction + 255 * (1 - alpha_fraction))
+        return '#{:02x}{:02x}{:02x}'.format(r_new, g_new, b_new)
+
+def hex_to_rgb(hex_color):
+    # Remove the '#' if it's there
+    hex_color = hex_color.lstrip('#')
+    # Convert hex to RGB
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))

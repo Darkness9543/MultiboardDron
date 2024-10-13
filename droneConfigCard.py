@@ -62,9 +62,9 @@ class DroneConfigCard(ctk.CTkFrame):
             self.drone.Status = "disconnected"
 
     def __init__(self, parent, root, client, position, geofences, drone_color,
-                 id: int = 0,
+                 id, port,
                  width: int = 300,
-                 height: int = 700,
+                 height: int = 750,
                  color_palette: None = None):
         super().__init__(master=root)
 
@@ -78,6 +78,7 @@ class DroneConfigCard(ctk.CTkFrame):
         self.set_two = color_palette[1]
         self.set_three = color_palette[2]
         self.set_four = color_palette[3]
+        self.port = port
 
         self.id = id
         self.parent = parent
@@ -118,7 +119,7 @@ class DroneConfigCard(ctk.CTkFrame):
                                   text="Drone " + str(self.id + 1),
                                   font=("Helvetica", 16, "bold"),
                                   text_color="white")
-        self.label.grid(row=0, column=0, pady=(10, 0), padx=10)
+        self.label.grid(row=0, column=0, pady=(5, 0), padx=10)
 
         # Set the color indicator
         size = 60
@@ -126,6 +127,14 @@ class DroneConfigCard(ctk.CTkFrame):
                                                           text="", corner_radius=int(5), fg_color=drone_color)
         self.color_indicator.grid(row=0, column=0, pady=(50, 0), padx=10)
         self.color_indicator.grid_propagate(False)
+
+        # Set port label
+
+        self.port_label = ctk.CTkLabel(self,
+                                  text=self.port,
+                                  font=("Helvetica", 12, "bold"),
+                                  text_color="white")
+        self.port_label.grid(row=0, column=0, pady=(80, 0), padx=10)
 
         # Connection indicator
 
@@ -140,7 +149,7 @@ class DroneConfigCard(ctk.CTkFrame):
                                              50,
                                              300,
                                              25,
-                                             pady=(40, 5))
+                                             pady=(10, 5))
 
         # Fence enabled
 
@@ -164,7 +173,7 @@ class DroneConfigCard(ctk.CTkFrame):
                                                self.drone,
                                                "Geofence_Action",
                                                "Geofence action", 4,
-                                               ["Report only",
+                                               ["Report only", "Brake ",
                                                 "RTL ", "Land ",
                                                 "SmartRTL"]
                                                )
@@ -265,7 +274,9 @@ class DroneConfigCard(ctk.CTkFrame):
         self.drone_FLTMode6.update_value(FLTMODE6)
 
     def get_parameters(self):
-        self.client.publish("miMain/autopilotService" + str(self.id + 1) + "/getParameters")
+        parameters = json.dumps(['FENCE_ALT_MAX', 'FENCE_ENABLE', 'FENCE_MARGIN', 'FENCE_ACTION',
+                                 "RTL_ALT", "PILOT_SPEED_UP", 'FLTMODE6'])
+        self.client.publish("miMain/autopilotService" + str(self.id + 1) + "/getParameters", parameters)
 
     def set_parameters(self):
         drone = self.drone

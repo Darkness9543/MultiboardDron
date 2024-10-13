@@ -76,6 +76,7 @@ class DroneConfigMenu(ctk.CTkFrame):
             "Report only": 0,
             "RTL ": 1,
             "Land ": 2,
+            "Brake ": 4,
             "SmartRTL": 5,
 
             "Stabilize": 0,
@@ -86,23 +87,23 @@ class DroneConfigMenu(ctk.CTkFrame):
             "Loiter": 5,
             "RTL": 6,
             "Circle": 7,
-            "Land": 8,
-            "Drift": 9,
-            "Sport": 10,
-            "Flip": 11,
-            "AutoTune": 12,
-            "PosHold": 13,
-            "Brake": 14,
-            "Throw": 15,
-            "Avoid_ADSB": 16,
-            "Guided_NoGPS": 17,
-            "Smart_RTL": 18,
-            "FlowHold": 19,
-            "Follow": 20,
-            "ZigZag": 21,
-            "SystemID": 22,
-            "Heli_Autorotate": 23,
-            "Auto RTL": 24
+            "Land": 9,
+            "Drift": 11,
+            "Sport": 13,
+            "Flip": 14,
+            "AutoTune": 15,
+            "PosHold": 16,
+            "Brake": 17,
+            "Throw": 18,
+            "Avoid_ADSB": 19,
+            "Guided_NoGPS": 20,
+            "Smart_RTL": 21,
+            "FlowHold": 22,
+            "Follow": 23,
+            "ZigZag": 24,
+            "SystemID": 25,
+            "Heli_Autorotate": 26,
+            "Auto RTL": 27
         }
         value_int = int(value_map[value])
         setattr(self.drone, self.drone_data_attribute, value_int)
@@ -125,7 +126,7 @@ class DroneConfigMenu(ctk.CTkFrame):
             elif droneDataAttributeValue == 3:
                 currentAttributeValue = "SmartRTL or RTL or Land"
             elif droneDataAttributeValue == 4:
-                currentAttributeValue = "Brake or Land"
+                currentAttributeValue = "Brake"
             elif droneDataAttributeValue == 5:
                 currentAttributeValue = "SmartRTL"
 
@@ -146,39 +147,39 @@ class DroneConfigMenu(ctk.CTkFrame):
                 currentAttributeValue = "RTL"
             elif droneDataAttributeValue == 7:
                 currentAttributeValue = "Circle"
-            elif droneDataAttributeValue == 8:
-                currentAttributeValue = "Land"
             elif droneDataAttributeValue == 9:
-                currentAttributeValue = "Drift"
-            elif droneDataAttributeValue == 10:
-                currentAttributeValue = "Sport"
+                currentAttributeValue = "Land"
             elif droneDataAttributeValue == 11:
-                currentAttributeValue = "Flip"
-            elif droneDataAttributeValue == 12:
-                currentAttributeValue = "AutoTune"
+                currentAttributeValue = "Drift"
             elif droneDataAttributeValue == 13:
-                currentAttributeValue = "PosHold"
+                currentAttributeValue = "Sport"
             elif droneDataAttributeValue == 14:
-                currentAttributeValue = "Brake"
+                currentAttributeValue = "Flip"
             elif droneDataAttributeValue == 15:
-                currentAttributeValue = "Throw"
+                currentAttributeValue = "AutoTune"
             elif droneDataAttributeValue == 16:
-                currentAttributeValue = "Avoid_ADSB"
+                currentAttributeValue = "PosHold"
             elif droneDataAttributeValue == 17:
-                currentAttributeValue = "Guided_NoGPS"
+                currentAttributeValue = "Brake"
             elif droneDataAttributeValue == 18:
-                currentAttributeValue = "Smart_RTL"
+                currentAttributeValue = "Throw"
             elif droneDataAttributeValue == 19:
-                currentAttributeValue = "FlowHold"
+                currentAttributeValue = "Avoid_ADSB"
             elif droneDataAttributeValue == 20:
-                currentAttributeValue = "Follow"
+                currentAttributeValue = "Guided_NoGPS"
             elif droneDataAttributeValue == 21:
-                currentAttributeValue = "ZigZag"
+                currentAttributeValue = "Smart_RTL"
             elif droneDataAttributeValue == 22:
-                currentAttributeValue = "SystemID"
+                currentAttributeValue = "FlowHold"
             elif droneDataAttributeValue == 23:
-                currentAttributeValue = "Heli_Autorotate"
+                currentAttributeValue = "Follow"
             elif droneDataAttributeValue == 24:
+                currentAttributeValue = "ZigZag"
+            elif droneDataAttributeValue == 25:
+                currentAttributeValue = "SystemID"
+            elif droneDataAttributeValue == 26:
+                currentAttributeValue = "Heli_Autorotate"
+            elif droneDataAttributeValue == 27:
                 currentAttributeValue = "Auto RTL"
         else:
             currentAttributeValue = "Unknown"

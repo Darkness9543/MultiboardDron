@@ -119,7 +119,7 @@ class DroneConfigWidget(ctk.CTkFrame):
                                                              orientation="horizontal",
                                                              height=int(self.card_height +
                                                                         (self.height - self.top_frame_height) *
-                                                                        percent_padding / 2),
+                                                                        percent_padding / 2)+ 50,
                                                              scrollbar_button_color=self.set_four,
                                                              width=int(self.width * (1 - percent_padding)),
                                                              fg_color=self.set_three,
@@ -156,7 +156,7 @@ class DroneConfigWidget(ctk.CTkFrame):
                                                 self.main_frame_scrolleable,
                                                 self.client,
                                                 droneId, self.selected_geofence,self.drone_colors[droneId],
-                                                droneId,
+                                                droneId, self.connection_ports[droneId],
                                                 height=self.card_height)
             self.drone_card_list[droneId] = drone_config_card
 

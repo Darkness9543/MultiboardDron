@@ -148,6 +148,8 @@ class DroneControlWidget(ctk.CTkFrame):
                             pady=(self.padding_y * self.height + self.top_frame_height, self.padding_y * self.height))
         self.map_frame.grid_propagate(False)
 
+        self.drone_map_widget = DroneMap(self.map_frame, self.client, self.drones, self.drone_colors, 720, 1080)
+
         self.show_geofences_button = ctk.CTkButton(self.map_frame,
                                                    height=40,
                                                    width=100,
@@ -156,6 +158,7 @@ class DroneControlWidget(ctk.CTkFrame):
                                                    text_color="black",
                                                    command=self.show_geofences)
         self.show_geofences_button.place(x=width - 100 - 20, y=height - 40 - 20)
+
 
     def hide_scrollbar(self, scrollable_frame):
         scrollbar = scrollable_frame._scrollbar
@@ -383,7 +386,7 @@ class DroneControlWidget(ctk.CTkFrame):
 
         self.create_telememtry_info_display(button_frame_height, button_frame_pady)
 
-        self.drone_map_widget = DroneMap(self.map_frame, self.client, self.drones, self.drone_colors, 720, 1080)
+
 
     def on_moving_release(self):
         self.client.publish("miMain/autopilotService" + str(self.selected_drone.DroneId + 1) + "/move", "Stop")
@@ -497,8 +500,7 @@ class DroneControlWidget(ctk.CTkFrame):
         print(f" autopilotService'{drone_num + 1}' has been  instucted to '{button_text}'")
 
     def show_geofences(self):
-        for drone in self.drones:
-            self.drone_map_widget.draw_geofence(drone.geofence.Coordinates[drone.DroneId], drone.DroneId, "#FF0000")
+        self.drone_map_widget.draw_geofences(self.drones[0].geofence.Coordinates)
         self.show_geofences_button.configure(command=self.hide_geofences, text="Hide geofences")
 
     def hide_geofences(self):

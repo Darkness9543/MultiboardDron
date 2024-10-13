@@ -35,6 +35,14 @@ class DroneConfigSlider(ctk.CTkFrame):
         self.pady = pady
         self.width = width
         self.height = height
+        self.set_units_multiplier = 1
+        # Changing units from cm to m for some parameters
+
+        if self.drone_data_attribute in ("Fence_Altitude_Max","RTL_Altitude","Pilot_Speed_Up"):
+            self.min_value *= 0.01
+            self.max_value *= 0.01
+
+            self.set_units_multiplier = 0.01
 
         self.drone_data_attribute_value = str(getattr(drone, drone_data_attribute))
 
@@ -77,21 +85,36 @@ class DroneConfigSlider(ctk.CTkFrame):
 
         self.entry.bind("<Return>", lambda event: self.update_slider_from_entry())
 
+        # Units label
+        self.unit_text = ""
+        if self.drone_data_attribute in ("Fence_Altitude_Max", "Geofence_Margin", "RTL_Altitude"):
+            self.unit_text = "m"
+        if self.drone_data_attribute in "Pilot_Speed_Up":
+            self.unit_text = "m/s"
+        self.units_label = ctk.CTkLabel(self.entry,
+                                        width = 10,
+                                        height = 10,
+                                        text=self.unit_text,
+                                        fg_color="transparent",
+                                        text_color="black")
+        self.units_label.grid(row=0, column=0, sticky="E", padx=5, pady=5)
+
     def update_entry_from_slider(self, value):
         self.entry.delete(0, ctk.END)
-        self.entry.insert(0, str(value))
-        setattr(self.drone, self.drone_data_attribute, value)
+        self.entry.insert(0, str(round(value,2)))
+        setattr(self.drone, self.drone_data_attribute, value/self.set_units_multiplier)
 
     def update_slider_from_entry(self):
         # Update the slider from the entry
         value = float(self.entry.get())
         self.slider.set(value)
-        setattr(self.drone, self.drone_data_attribute, value)
+        setattr(self.drone, self.drone_data_attribute, value/self.set_units_multiplier)
 
     def update_value(self, value):
-        self.update_entry_from_slider(value)
+        self.update_entry_from_slider(value*self.set_units_multiplier)
         self.update_slider_from_entry()
-        self.current_value_label.configure(text="Current value : " + str(value))
+
+        self.current_value_label.configure(text=f"Current value : {str(value*self.set_units_multiplier)} {self.unit_text}")
 
     def get_value(self):
         return float(self.entry.get())
