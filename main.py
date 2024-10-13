@@ -22,6 +22,7 @@ import geofenceEditorWidget as geoEdit
 import atexit
 from AutopilotServiceClass import AutopilotService
 
+
 def get_defaults(json_file_path="data/defaults.json"):
     try:
         with open(json_file_path, 'r') as file:
@@ -30,8 +31,9 @@ def get_defaults(json_file_path="data/defaults.json"):
         connection_strings = data.get('connection_strings', [])
         ports = data.get('ports', [])
         drone_colors = data.get('drone_colors', [])
+        max_drones = data.get('max_drones')
 
-        return connection_strings, ports, drone_colors
+        return connection_strings, ports, drone_colors, max_drones
     except FileNotFoundError:
         print(f"Error: The file {json_file_path} was not found.")
         return [], [], []
@@ -41,6 +43,8 @@ def get_defaults(json_file_path="data/defaults.json"):
     except Exception as e:
         print(f"An unexpected error occurred: {str(e)}")
         return [], [], []
+
+
 class App(ctk.CTk):
     def on_message(self, client, userdata, message):
         if self.drone_config_widget_created:
@@ -83,15 +87,16 @@ class App(ctk.CTk):
 
         # Load defaults
 
-        connection_strings, ports, drone_colors = get_defaults()
-        self.defaults = [connection_strings, ports, drone_colors]
+        connection_strings, ports, drone_colors, max_drones = get_defaults()
+        self.defaults = [connection_strings, ports, drone_colors, max_drones]
         # Initialize the main window components
         self.connect_MQTT()
         self.initialize_main_window()
         self.geofence_widget = geoWid.geofenceViewWidget(self, self.tabs[0], self.defaults)
         self.drone_widget = droSelWid.droneSelectionWidget(self, self.tabs[0], self.defaults)
         self.geofence_editor = geoEdit.geofenceEditorWidget(self, self.tabs[1], self.defaults, None,
-                                                            width=self.tabs[0].winfo_width(), height=self.tabs[0].winfo_height())
+                                                            width=self.tabs[0].winfo_width(),
+                                                            height=self.tabs[0].winfo_height())
         self.create_proceed_to_drone_config_button()
         self.create_switch_prod_sim()
 
@@ -174,9 +179,11 @@ class App(ctk.CTk):
                                                             width=100,
                                                             height=30)
         self.proceed_to_drone_config_button.grid(row=0, column=0, sticky="nw", padx=10, pady=682)
+
     def on_switch_toggle_prod_sim(self):
         print("on switch")
         self.drone_widget.switch_port_sim()
+
     def proceed_to_drone_config(self):
         connection_ports = self.drone_widget.get_connection_ports()
         print(self.selected_geofence)
@@ -205,10 +212,9 @@ class App(ctk.CTk):
                                                          self.client,
                                                          self.selected_geofence,
                                                          self.defaults,
-                                                         width=self.window_width-self.sidebar_width,
+                                                         width=self.window_width - self.sidebar_width,
                                                          height=self.window_height)
             self.drone_config_widget_created = True
-
 
     def create_switch_prod_sim(self):
         def update_switch_label():
@@ -220,8 +226,9 @@ class App(ctk.CTk):
                 self.state_var.set("Simulation")
 
             self.on_switch_toggle_prod_sim()
+
         self.switch_prod_sim_frame = ctk.CTkFrame(self.tabs[0],
-                             width=120, height=30, fg_color=self.color_palette[2])
+                                                  width=120, height=30, fg_color=self.color_palette[2])
         self.switch_prod_sim_frame.grid(row=0, column=0, padx=130, pady=682, sticky="nw")
         self.switch_prod_sim_frame.grid_propagate(False)
 
@@ -235,8 +242,9 @@ class App(ctk.CTk):
         self.switch_prod_sim.grid(row=0, column=0, padx=5, pady=5, sticky="nw")
 
         # Label beneath the switch
-        switch_label = ctk.CTkLabel(self.switch_prod_sim_frame, text="Simulation", text_color="black", font=("Segoe UI", 13, "bold"))
-        switch_label.grid(row=0, column=0, padx=(45,5), pady=4, sticky="nw")
+        switch_label = ctk.CTkLabel(self.switch_prod_sim_frame, text="Simulation", text_color="black",
+                                    font=("Segoe UI", 13, "bold"))
+        switch_label.grid(row=0, column=0, padx=(45, 5), pady=4, sticky="nw")
 
         self.switch_prod_sim.configure(command=update_switch_label)
         self.switch_prod_sim.grid(row=0, column=0, sticky="nw", padx=5, pady=5)
@@ -276,6 +284,11 @@ class App(ctk.CTk):
         )
         self.proceed_to_drone_config_button.grid(row=0, column=0, sticky="nw", padx=10, pady=682)
         self.switch_prod_sim_frame.grid(row=0, column=0, padx=130, pady=682, sticky="nw")
+
+    def update_root(self):
+        self.update()
+        self.update_idletasks()
+
 
 root = App()
 root.mainloop()

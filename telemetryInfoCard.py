@@ -20,7 +20,7 @@ class TelemetryInfoCard(ctk.CTkFrame):
                  drone,
                  drone_total,
                  width: int = 100,
-                 height: int = 60,
+                 height: int = 30,
                  color_palette: None = None):
         super().__init__(master=root)
 
@@ -48,31 +48,30 @@ class TelemetryInfoCard(ctk.CTkFrame):
 
 
 
-        self.configure(width= self.width, height=self.height, fg_color="transparent")
+        self.configure(width= self.width, height=self.height, fg_color=self.set_two)
         self.grid(row=position[0], column=position[1], padx=5, pady=5)
         self.grid_propagate(False)
 
-
         self.label = ctk.CTkLabel(self,
-                                  text=self.text,
+                                  text=f"{self.text}",
                                   text_color="white")
-        self.label.grid(row=0, column=0, padx=5, pady=5)
+        self.label.place(x=5,y=1)
 
         self.value_label = ctk.CTkLabel(self,
                                   text="",
                                   text_color="white")
-        self.value_label.grid(row=1, column=0, padx=5, pady=0, sticky="EW")
+        self.value_label.place(x=100,y=1)
 
         for i in range(self.drone_total):
             self.client.subscribe(f"autopilotService{i+1}/miMain/telemetryInfo")
 
     def update_value_label(self, value):
         if self.telemetry_data == "lat" or self.telemetry_data == "lon":
-            self.value_label.configure(text=str(round(value,6)))
+            self.value_label.configure(text=f" {str(round(value,6))}")
         elif self.telemetry_data == "state":
-            self.value_label.configure(text=value)
+            self.value_label.configure(text=f" {value}")
         else:
-            self.value_label.configure(text=str(round(value, 2)))
+            self.value_label.configure(text=f" {str(round(value, 2))}")
     def set_current_drone(self, drone):
         self.drone = drone
         self.value_label.configure(text="")

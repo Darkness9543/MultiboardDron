@@ -61,12 +61,12 @@ class droneSelectionWidget(ctk.CTkFrame):
 
         self.default_connection_data = defaults[0]
         self.default_port_data = defaults[1]
-        print(defaults[2])
+        print(defaults[3])
         self.drone_colors = defaults[2]
 
         self.is_sim = True
         self.drone_selection_frame_color = self.set_two
-        self.MAX_DRONES = 10
+        self.MAX_DRONES = defaults[3]
         self.drone_frames = []
 
         # Drone number selector

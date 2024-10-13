@@ -62,7 +62,7 @@ class DroneConfigWidget(ctk.CTkFrame):
         self.drone_colors = defaults[2]
 
         self.top_frame_height = 50
-        self.card_height = 700
+        self.card_height = 850
         self.top_buttons_height = 25
 
         self.create_main_frame()

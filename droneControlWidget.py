@@ -159,7 +159,6 @@ class DroneControlWidget(ctk.CTkFrame):
                                                    command=self.show_geofences)
         self.show_geofences_button.place(x=width - 100 - 20, y=height - 40 - 20)
 
-
     def hide_scrollbar(self, scrollable_frame):
         scrollbar = scrollable_frame._scrollbar
         scrollbar.configure(width=0, height=0, corner_radius=0)
@@ -200,7 +199,7 @@ class DroneControlWidget(ctk.CTkFrame):
                                                fg_color=self.set_three,
                                                width=150,
                                                height=150)
-        self.NWSE_buttons_frame.grid(row=0, column=0, padx=5, pady=5, columnspan=4, rowspan=4)
+        self.NWSE_buttons_frame.grid(row=0, column=0, padx=5, pady=5, columnspan=3, rowspan=3)
         buttons_NWSE = []
         positions = ["NW", "N", "NE", "W", "E", "SW", "S", "SE"]
         for row in range(3):
@@ -241,6 +240,7 @@ class DroneControlWidget(ctk.CTkFrame):
                                                       fg_color=self.set_three,
                                                       width=150,
                                                       height=150)
+        self.directional_buttons_frame.grid_propagate(False)
         buttons_directional = []
         positions = ["Fwd", "Left", "Right", "Back"]
         for row in range(3):
@@ -301,28 +301,29 @@ class DroneControlWidget(ctk.CTkFrame):
         info_display_height = int(int(self.control_frame_height * self.height)
                                   - button_frame_height
                                   - button_frame_pady * 16)
-        self.info_display = ctk.CTkFrame(self.content_frame,
-                                         fg_color=self.set_one,
-                                         width=info_display_width,
-                                         height=info_display_height - 20)
+        self.info_display = ctk.CTkScrollableFrame(self.content_frame,
+                                                   fg_color=self.set_one,
+                                                   width=int(info_display_width/2),
+                                                   height=info_display_height - 20,
+                                                   orientation="vertical")
         self.info_display.grid(columnspan=2,
                                row=5,
                                column=0,
                                sticky="nwse",
                                padx=info_display_padx - 5,
                                pady=button_frame_pady + 20)
-        self.initialize_telemetry_info_display()
+        self.initialize_telemetry_info_display(info_display_width)
 
     def create_control_type_switch(self):
         def on_nswe_click():
-            self.NWSE_buttons_frame.grid(row=0, column=0, padx=5, pady=5, columnspan=4, rowspan=4)
+            self.NWSE_buttons_frame.grid(row=0, column=0, padx=5, pady=5, columnspan=3, rowspan=3)
             self.directional_buttons_frame.grid_forget()
 
             self.directional_button.configure(fg_color=inactive_color, hover_color=hover_color)
             self.nswe_button.configure(fg_color=active_color, hover_color=active_color)
 
         def on_directional_click():
-            self.directional_buttons_frame.grid(row=0, column=0, padx=5, pady=5, columnspan=4, rowspan=4)
+            self.directional_buttons_frame.grid(row=0, column=0, padx=5, pady=5, columnspan=3, rowspan=3)
             self.NWSE_buttons_frame.grid_forget()
 
             self.nswe_button.configure(fg_color=inactive_color, hover_color=hover_color)
@@ -336,7 +337,7 @@ class DroneControlWidget(ctk.CTkFrame):
                                                  fg_color=brighten_color(self.set_three, 30),
                                                  width=100,
                                                  height=50)
-        self.control_switch_frame.grid(row=4, column=0, padx=10, pady=5)
+        self.control_switch_frame.grid(row=3, column=0, padx=10, pady=5, columnspan=3)
 
         self.nswe_button = ctk.CTkButton(self.control_switch_frame,
                                          fg_color=active_color,
@@ -354,9 +355,49 @@ class DroneControlWidget(ctk.CTkFrame):
                                                 text="Directional",
                                                 text_color="black",
                                                 width=45,
-                                                height=30,
+                                                height=25,
                                                 command=on_directional_click)
         self.directional_button.grid(row=0, column=1, padx=(3, 5), pady=5, sticky="E")
+
+    def create_altitude_buttons(self):
+
+        self.altitude_frame = ctk.CTkFrame(self.button_frame,
+                                           fg_color=brighten_color(self.set_three, 30),
+                                           width=30)
+        self.altitude_frame.grid(row=0, column=3, padx=0, pady=5, rowspan=3)
+
+        self.up_button = ctk.CTkButton(self.altitude_frame,
+                                       fg_color=self.set_four,
+                                       text="↑",
+                                       text_color="black",
+                                       width=20,
+                                       height=40,
+                                       command=lambda: self.on_moving_press("Up"))
+        self.up_button.grid(row=0, column=3, padx=5, pady=5, sticky="NW")
+        self.up_button.bind(
+            "<ButtonPress-1>",
+            lambda event: self.on_moving_press("Up")
+        )
+        self.up_button.bind(
+            "<ButtonRelease-1>",
+            lambda event: self.on_moving_release()
+        )
+
+        self.down_button = ctk.CTkButton(self.altitude_frame,
+                                         fg_color=self.set_four,
+                                         text="↓",
+                                         text_color="black",
+                                         width=20,
+                                         height=40)
+        self.down_button.grid(row=2, column=3, padx=5, pady=5, sticky="NW")
+        self.down_button.bind(
+            "<ButtonPress-1>",
+            lambda event: self.on_moving_press("Down")
+        )
+        self.down_button.bind(
+            "<ButtonRelease-1>",
+            lambda event: self.on_moving_release()
+        )
 
     def initialize_control_frame_content(self):
         button_frame_height = 200
@@ -376,7 +417,13 @@ class DroneControlWidget(ctk.CTkFrame):
 
         self.create_directional_control_frame()
 
+        # Create a switch to alternate between nswe and directional movement
+
         self.create_control_type_switch()
+
+        # Create the altitude controls
+
+        self.create_altitude_buttons()
 
         # Creating the drone commands frame
 
@@ -386,12 +433,10 @@ class DroneControlWidget(ctk.CTkFrame):
 
         self.create_telememtry_info_display(button_frame_height, button_frame_pady)
 
-
-
     def on_moving_release(self):
         self.client.publish("miMain/autopilotService" + str(self.selected_drone.DroneId + 1) + "/move", "Stop")
 
-    def on_moving_press(self, position, drone):
+    def on_moving_press(self, position, drone=None):
         position_to_direction = {
             "N": "North",
             "S": "South",
@@ -418,7 +463,7 @@ class DroneControlWidget(ctk.CTkFrame):
             self.on_moving_press(position, self.current_drone)
             self.repeat_id = self.button.after(200, self.repeat_command, position)
 
-    def initialize_telemetry_info_display(self):
+    def initialize_telemetry_info_display(self, info_display_width):
 
         ground_speed = TelemetryInfo(self,
                                      self.info_display,
@@ -427,7 +472,7 @@ class DroneControlWidget(ctk.CTkFrame):
                                      "Ground speed",
                                      "groundSpeed",
                                      self.current_drone,
-                                     len(self.drones))
+                                     len(self.drones), width=info_display_width-10)
         self.telemetry_info_list.append(ground_speed)
 
         alt = TelemetryInfo(self,
@@ -437,7 +482,7 @@ class DroneControlWidget(ctk.CTkFrame):
                             "Altitude",
                             "alt",
                             self.current_drone,
-                            len(self.drones))
+                            len(self.drones), width=info_display_width-10)
         self.telemetry_info_list.append(alt)
 
         state = TelemetryInfo(self,
@@ -447,37 +492,37 @@ class DroneControlWidget(ctk.CTkFrame):
                               "State",
                               "state",
                               self.current_drone,
-                              len(self.drones))
+                              len(self.drones), width=info_display_width-10)
         self.telemetry_info_list.append(state)
 
         lat = TelemetryInfo(self,
                             self.info_display,
                             self.client,
-                            [0, 1],
+                            [3, 0],
                             "Latitude",
                             "lat",
                             self.current_drone,
-                            len(self.drones))
+                            len(self.drones), width=info_display_width-10)
         self.telemetry_info_list.append(lat)
 
         lon = TelemetryInfo(self,
                             self.info_display,
                             self.client,
-                            [1, 1],
+                            [4, 0],
                             "Longitude",
                             "lon",
                             self.current_drone,
-                            len(self.drones))
+                            len(self.drones), width=info_display_width-10)
         self.telemetry_info_list.append(lon)
 
         heading = TelemetryInfo(self,
                                 self.info_display,
                                 self.client,
-                                [2, 1],
+                                [5, 0],
                                 "Heading",
                                 "heading",
                                 self.current_drone,
-                                len(self.drones))
+                                len(self.drones), width=info_display_width-10)
         self.telemetry_info_list.append(heading)
 
     def receive_messaage(self, message):

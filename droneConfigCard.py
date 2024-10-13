@@ -28,7 +28,8 @@ class DroneConfigCard(ctk.CTkFrame):
                     payload[3]['FENCE_ACTION'],
                     payload[4]['RTL_ALT'],
                     payload[5]['PILOT_SPEED_UP'],
-                    payload[6]['FLTMODE6']
+                    payload[6]['FLTMODE6'],
+                    payload[7]['WP_YAW_BEHAVIOR']
                 )
                 print("Fence Alt Max: " + str(payload[0]['FENCE_ALT_MAX']))
                 print("Fence Enable: " + str(payload[1]['FENCE_ENABLE']))
@@ -44,7 +45,8 @@ class DroneConfigCard(ctk.CTkFrame):
                                    payload[3]['FENCE_ACTION'],
                                    payload[4]['RTL_ALT'],
                                    payload[5]['PILOT_SPEED_UP'],
-                                   payload[6]['FLTMODE6'])
+                                   payload[6]['FLTMODE6'],
+                                   payload[7]['WP_YAW_BEHAVIOR'])
                 self.indicator.set_state("Connected")
 
         if ReceivedInfoType == "connected":
@@ -55,9 +57,8 @@ class DroneConfigCard(ctk.CTkFrame):
             self.client.publish(f"miMain/autopilotService{self.id + 1}/setGeofence", payload)
             self.indicator.set_state("Setting geofence")
         if ReceivedInfoType == "geofenceSet":
-            parameters = json.dumps(['FENCE_ALT_MAX', 'FENCE_ENABLE', 'FENCE_MARGIN', 'FENCE_ACTION',
-                                     "RTL_ALT", "PILOT_SPEED_UP", 'FLTMODE6'])
-            self.client.publish("miMain/autopilotService" + str(MessageDroneId) + "/getParameters", parameters)
+
+            self.client.publish("miMain/autopilotService" + str(MessageDroneId) + "/getParameters", self.parameters)
         if ReceivedInfoType == "disconnected":
             self.drone.Status = "disconnected"
 
@@ -79,7 +80,8 @@ class DroneConfigCard(ctk.CTkFrame):
         self.set_three = color_palette[2]
         self.set_four = color_palette[3]
         self.port = port
-
+        self.parameters = json.dumps(['FENCE_ALT_MAX', 'FENCE_ENABLE', 'FENCE_MARGIN', 'FENCE_ACTION',
+                                     "RTL_ALT", "PILOT_SPEED_UP", 'FLTMODE6', 'WP_YAW_BEHAVIOR'])
         self.id = id
         self.parent = parent
         self.root = root
@@ -99,6 +101,8 @@ class DroneConfigCard(ctk.CTkFrame):
         print("self.id+1")
         print(self.id+1)
 
+        self.configure(fg_color="red")
+        self.grid_propagate(False)
 
         # Setting up the interface
 
@@ -205,6 +209,13 @@ class DroneConfigCard(ctk.CTkFrame):
                                         "FLTMode 6", 7,
                                         ["RTL", "Land"])
 
+        # WP_YAW_BEHAVIOR
+
+        self.drone_WP_YAW_BEHAVIOR = DroneCheckbox(self,
+                                                 self.drone,
+                                                 "WP_YAW_BEHAVIOR",
+                                                 "Change yaw on movement", 8)
+
         # Setting up configuration buttons
 
         self.get_parameters_button = ctk.CTkButton(self,
@@ -212,10 +223,10 @@ class DroneConfigCard(ctk.CTkFrame):
                                                    text_color="black",
                                                    font=("Helvetica", 13, "bold"),
                                                    width=135,
-                                                   height=40,
+                                                   height=30,
                                                    fg_color=self.set_four,
                                                    command=lambda: self.get_parameters())
-        self.get_parameters_button.grid(row=8, column=0, padx=10, pady=10, sticky="W")
+        self.get_parameters_button.grid(row=9, column=0, padx=10, pady=(10,5), sticky="W")
         self.get_parameters_button.grid_propagate(False)
 
         self.set_parameters_button = ctk.CTkButton(self,
@@ -223,10 +234,10 @@ class DroneConfigCard(ctk.CTkFrame):
                                                    text_color="black",
                                                    font=("Helvetica", 13, "bold"),
                                                    width=135,
-                                                   height=40,
+                                                   height=30,
                                                    fg_color=self.set_four,
                                                    command=lambda: self.set_parameters())
-        self.set_parameters_button.grid(row=8, column=0, padx=10, pady=10, sticky="E")
+        self.set_parameters_button.grid(row=9, column=0, padx=10, pady=(10,5), sticky="E")
         self.set_parameters_button.grid_propagate(False)
         # Share config
 
@@ -235,10 +246,10 @@ class DroneConfigCard(ctk.CTkFrame):
                                                    text_color="black",
                                                    font=("Helvetica", 13, "bold"),
                                                    width=135,
-                                                   height=40,
+                                                   height=30,
                                                    fg_color=self.set_four,
                                                    command=lambda: self.share_config())
-        self.share_config_button.grid(row=9, column=0, padx=20, pady=(5,10))
+        self.share_config_button.grid(row=10, column=0, padx=20, pady=(5,25))
         self.share_config_button.grid_propagate(False)
 
         # Reconnect button
@@ -264,7 +275,9 @@ class DroneConfigCard(ctk.CTkFrame):
                       FENCE_ACTION,
                       RTL_ALT,
                       PILOT_SPEED_UP,
-                      FLTMODE6):
+                      FLTMODE6,
+                      WP_YAW_BEHAVIOR
+                      ):
         self.drone_slider_test.update_value(FENCE_ALT_MAX)
         self.drone_fence_enabled.update_value(FENCE_ENABLE)
         self.drone_geofence_margin.update_value(FENCE_MARGIN)
@@ -272,11 +285,10 @@ class DroneConfigCard(ctk.CTkFrame):
         self.drone_rtl_altitude.update_value(RTL_ALT)
         self.drone_pilot_speed_up.update_value(PILOT_SPEED_UP)
         self.drone_FLTMode6.update_value(FLTMODE6)
+        self.drone_WP_YAW_BEHAVIOR.update_value(WP_YAW_BEHAVIOR)
 
     def get_parameters(self):
-        parameters = json.dumps(['FENCE_ALT_MAX', 'FENCE_ENABLE', 'FENCE_MARGIN', 'FENCE_ACTION',
-                                 "RTL_ALT", "PILOT_SPEED_UP", 'FLTMODE6'])
-        self.client.publish("miMain/autopilotService" + str(self.id + 1) + "/getParameters", parameters)
+        self.client.publish("miMain/autopilotService" + str(self.id + 1) + "/getParameters", self.parameters)
 
     def set_parameters(self):
         drone = self.drone
@@ -288,7 +300,8 @@ class DroneConfigCard(ctk.CTkFrame):
             {"ID": "FENCE_ACTION", "Value": drone.Geofence_Action},
             {"ID": "RTL_ALT", "Value": drone.RTL_Altitude},
             {"ID": "PILOT_SPEED_UP", "Value": drone.Pilot_Speed_Up},
-            {"ID": "FLTMODE6", "Value": drone.FLTMode6}
+            {"ID": "FLTMODE6", "Value": drone.FLTMode6},
+            {"ID": "WP_YAW_BEHAVIOR", "Value": drone.WP_YAW_BEHAVIOR}
         ]
 
         for param in params_to_set:

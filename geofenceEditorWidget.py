@@ -12,6 +12,8 @@ from PIL import Image, ImageTk, ImageDraw
 from typing import List
 from tkintermapview import TkinterMapView
 import atexit
+
+import geofenceEditorView
 from geofenceCardWidget import GeofenceCardWidget
 from geofencePicker import geofencePicker as geoPick
 
@@ -130,15 +132,23 @@ class geofenceEditorWidget(ctk.CTkFrame):
     def create_geofence_editor_viewport(self,
                                         width=928,
                                         height=550,
-                                        fg_color="black"):
+                                        fg_color="red"):
         self.geofence_viewport_widget = ctk.CTkFrame(self,
                                                      width=width,
                                                      height=height,
                                                      fg_color=fg_color)
         self.geofence_viewport_widget.pack(pady=(10, 10), padx=(0,10), fill="both", expand=True, side="right")
-        self.geofence_viewport_widget.grid_rowconfigure(0, weight=1)
-        self.geofence_viewport_widget.grid_columnconfigure(0, weight=1)
-
+        self.geofence_viewport_widget.grid_propagate(False)
+        self.geofence_viewport_widget.update()
+        self.geofence_viewport_widget.update_idletasks()
+        self.parent.update_root()
+        self.update()
+        self.update_idletasks()
+        self.geofence_editor = geofenceEditorView.GeofenceEditor(self, self.geofence_viewport_widget,
+                                                                 self.defaults,
+                                                                 None,
+                                                                 width=928,
+                                                                 height=870)
         self.new_button = ctk.CTkButton(self.geofence_viewport_widget,
                                         height=20,
                                         width=60,
@@ -163,13 +173,6 @@ class geofenceEditorWidget(ctk.CTkFrame):
                                            text_color="black")
         self.delete_button.place(x=140, y=10)
 
-        self.geofence_image = ctk.CTkLabel(self.geofence_viewport_widget,
-                                           text="",
-                                           width=int(width * 0.95),
-                                           height=int(height * 0.95),
-                                           fg_color="transparent",
-                                           anchor="center")
-        self.geofence_image.place(x=205, y=10)
 
     def draw_geofence(self, card,
                       width=int(928 * 0.95),

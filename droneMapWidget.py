@@ -4,6 +4,28 @@ import json
 import math
 
 
+def hex_to_rgba(hex_color, alpha=0.6):
+    """
+    Convert a hex color string to RGBA.
+
+    :param hex_color: A string representing a hex color (e.g., '#1ABC9C' or '1ABC9C')
+    :param alpha: A float between 0 and 1 representing the alpha value (default is 1.0)
+    :return: A tuple of four values (red, green, blue, alpha), each between 0 and 1
+    """
+    # Remove the '#' if it's there
+    hex_color = hex_color.lstrip('#')
+
+    # Ensure the hex color is 6 characters long
+    if len(hex_color) != 6:
+        raise ValueError("Invalid hex color. It should be a 6-character string.")
+
+    # Convert hex to RGB
+    rgb = tuple(int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
+
+    # Normalize RGB values to be between 0 and 1
+    rgba = tuple(val / 255 for val in rgb) + (alpha,)
+
+    return rgba
 class DroneMap:
 
     def handle_message(self, message):
@@ -31,7 +53,9 @@ class DroneMap:
         self.map_widget = TkinterMapView(parent, height=height, width=width)
         self.map_widget.grid(row=0, column=0)
         self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}", max_zoom=22)
-        self.drone_colors = [(255, 0, 0, 100), (0, 255, 0, 100)]
+        self.drone_colors = []
+        for color in drone_colors:
+            self.drone_colors.append(hex_to_rgba(color))
 
         # Set initial position and zoom level
         self.map_widget.set_position(41.276448, 1.9888564)
@@ -137,7 +161,7 @@ class DroneMap:
                 if positions:
                     # Draw the exclusion polygon in black
                     polygon = self.map_widget.set_polygon(
-                        positions, fill_color='black', outline_color='black'
+                        positions, fill_color='black', outline_color='black', border_width=2
                     )
                     self.geofence_polygons.append(polygon)
                 else:

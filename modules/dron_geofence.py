@@ -289,7 +289,6 @@ def _setScenario(self, scenario, callback=None, params = None):
     while True:
         # esperamos a que nos pida el siguiente
         msg = self.message_handler.wait_for_message('MISSION_REQUEST', timeout=1)
-        print(f'Sending waypoint {msg.seq}/{len(wploader) - 1}')
         self.vehicle.mav.send(wploader[msg.seq])
         if msg.seq == len(wploader) - 1:
             # ya los hemos enviado todos
