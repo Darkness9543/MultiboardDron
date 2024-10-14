@@ -48,7 +48,6 @@ def get_defaults(json_file_path="data/defaults.json"):
 class App(ctk.CTk):
     def on_message(self, client, userdata, message):
         if self.drone_config_widget_created:
-            print(f"Message arrived: {message}")
             self.message_queue.put(message)
 
     def __init__(self):
@@ -103,7 +102,6 @@ class App(ctk.CTk):
     def process_messages(self):
         while True:
             message = self.message_queue.get()
-            print(f"Message get from queue {message}")
             self.drone_config_widget.receive_message(message)
             self.message_queue.task_done()
 

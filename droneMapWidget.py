@@ -26,6 +26,8 @@ def hex_to_rgba(hex_color, alpha=0.6):
     rgba = tuple(val / 255 for val in rgb) + (alpha,)
 
     return rgba
+
+
 class DroneMap:
 
     def handle_message(self, message):
@@ -53,9 +55,7 @@ class DroneMap:
         self.map_widget = TkinterMapView(parent, height=height, width=width)
         self.map_widget.grid(row=0, column=0)
         self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}", max_zoom=22)
-        self.drone_colors = []
-        for color in drone_colors:
-            self.drone_colors.append(hex_to_rgba(color))
+        self.drone_colors = drone_colors
 
         # Set initial position and zoom level
         self.map_widget.set_position(41.276448, 1.9888564)
@@ -72,7 +72,7 @@ class DroneMap:
         self.marker_images = []
         # Load the arrow image and create the combined image
         for drone in drones:
-            marker_image = self.create_combined_marker_image("assets/dronaArrow.png", self.drone_colors[drone.DroneId])
+            marker_image = self.create_combined_marker_image("assets/dronaArrow.png", drone_colors[drone.DroneId])
             self.marker_images.append(marker_image)
         self.marker_color = self.drone_colors
 
@@ -128,16 +128,13 @@ class DroneMap:
         """
         # First, hide any existing geofences
         self.hide_geofences()
-
         # Iterate over the geofence data
         for idx, shape_group in enumerate(coordinates_set):
             main_shape_data = shape_group[0]  # First element is the main shape
             exclusion_shapes_data = shape_group[1:]  # Remaining elements are exclusion shapes
 
             # Get the color for the inclusion zone
-            color = self.drone_colors[idx % len(self.drone_colors)]
             # Adjust the color to simulate transparency (since true transparency isn't supported)
-            adjusted_color = self.adjust_color_for_transparency(color)
 
             # Process the main shape (inclusion zone)
             # Generate positions (list of (lat, lon) tuples)
@@ -146,7 +143,7 @@ class DroneMap:
             if positions:
                 # Draw the inclusion polygon
                 polygon = self.map_widget.set_polygon(
-                    positions, fill_color=adjusted_color, outline_color=adjusted_color
+                    positions, fill_color=self.drone_colors[idx], outline_color=self.drone_colors[idx]
                 )
                 # Store the polygon for later removal
                 self.geofence_polygons.append(polygon)
@@ -256,7 +253,7 @@ class DroneMap:
 
         return (lat2, lon2)
 
-    def adjust_color_for_transparency(self, color, alpha=100):
+    def adjust_color_for_transparency(self, color, alpha=180):
         if isinstance(color, str):
             # If color is a string (hex), convert it to RGB
             color = hex_to_rgb(color)

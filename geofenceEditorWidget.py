@@ -162,7 +162,8 @@ class geofenceEditorWidget(ctk.CTkFrame):
                                          width=60,
                                          fg_color=self.set_four,
                                          text="Save",
-                                         text_color="black")
+                                         text_color="black",
+                                         command=self.save_scenario)
         self.save_button.place(x=75, y=10)
 
         self.delete_button = ctk.CTkButton(self.geofence_viewport_widget,
@@ -173,7 +174,8 @@ class geofenceEditorWidget(ctk.CTkFrame):
                                            text_color="black")
         self.delete_button.place(x=140, y=10)
 
-
+    def save_scenario(self):
+        self.geofence_editor.save_scenario()
     def draw_geofence(self, card,
                       width=int(928 * 0.95),
                       height=int(550 * 0.95)):

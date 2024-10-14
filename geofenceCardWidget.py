@@ -54,7 +54,7 @@ class GeofenceCardWidget(ctk.CTkFrame):
         self.geofence = geofence
         self.configure(fg_color=self.fg_color, width=self.width, height=self.height)
         self.grid_propagate(False)
-
+        print(f"Drone_colors: {drone_colors}")
         drone_colors = hex_to_rgba(drone_colors)
         self.map_image, center_position = gml.create_map_image(geofence_vector=self.geofence.Coordinates, colors=drone_colors)
         self.map_image_CTk = CTkImage(light_image=self.map_image, dark_image=self.map_image, size=(200, 180))

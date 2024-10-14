@@ -46,6 +46,8 @@ def meters_to_pixels(meters, lat, zoom, tile_size):
 
 def draw_polygons_with_exclusions_on_map(map_image, geofence_vector, zoom, x_origin_tile, y_origin_tile, tile_size,
                                          colors):
+    print("Draw polygons")
+
     # Ensure map_image is in RGBA mode to handle transparency
     if map_image.mode != 'RGBA':
         map_image = map_image.convert('RGBA')
@@ -151,7 +153,9 @@ def draw_polygons_with_exclusions_on_map(map_image, geofence_vector, zoom, x_ori
 
         # Create an overlay image with the shape color and alpha
         overlay = Image.new('RGBA', map_image.size, (0, 0, 0, 0))
+        print(f"Map colors: {colors}")
         color = colors[idx % len(colors)]  # Color should include alpha, e.g., (R, G, B, A)
+        print(f"Map color: {color}")
         color_image = Image.new('RGBA', map_image.size, color)
         # Paste the color image onto the overlay using the mask
         overlay.paste(color_image, (0, 0), mask)

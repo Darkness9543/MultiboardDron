@@ -35,7 +35,6 @@ def _send_telemetry_info(self, process_telemetry_info):
             'heading': self.heading,
             'state': self.state
         }
-        print(f"New telemetry info in Autopilot: {telemetry_info['lat']}, lon:{telemetry_info['lon']}")
         # llamo al callback
         if self.id == None:
             process_telemetry_info (telemetry_info)

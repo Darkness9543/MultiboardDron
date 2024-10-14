@@ -75,7 +75,6 @@ class DroneConfigWidget(ctk.CTkFrame):
 
     # Style to make the scroll bar transparent
     def receive_message(self, message):
-        print("Received message in config widget")
         topic_parts = message.topic.split('/')
         service_part = topic_parts[0]
         MessageDroneId = int(service_part.replace('autopilotService', ''))
@@ -241,4 +240,7 @@ class DroneConfigWidget(ctk.CTkFrame):
 
     def set_parameters_for_all(self):
         for drone_card in range(0, len(self.drone_card_list)):
-            self.drone_card_list[drone_card].set_parameters()
+            if self.drone_card_list[drone_card].drone.Status == "connected":
+                self.drone_card_list[drone_card].set_parameters()
+            else:
+                print(f"Current drone {self.drone_card_list[drone_card].drone.DroneId} is disconnected")
