@@ -149,10 +149,10 @@ class geofencePicker(ctk.CTkFrame):
         for card in self.geofence_card_list:
             if card.geofence.Name == geofence.Name:
                 card.highlight()
-                self.draw_geofence(card)
+                self.parent.load_geofence(geofence)
             else:
                 card.unhighlight()
-        self.parent.on_geofence_selected(geofence)
+        self.parent.load_geofence(geofence)
 
     def create_search_widget(self):
         def fav_button_clicked(fav_button, fav_off_image, fav_on_image):

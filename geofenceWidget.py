@@ -73,6 +73,13 @@ class geofenceViewWidget(ctk.CTkFrame):
         self.create_search_widget()
         self.create_geofence_viewport()
         self.set_color_palette()
+    def update_geofences(self):
+        self.load_geofence_list()
+        for geofence_card in self.geofence_card_list:
+            geofence_card.destroy()
+        self.geofence_card_list = []
+        self.create_geofence_cards()
+
 
     def geofence_selected(self, geofence):
         for card in self.geofence_card_list:
@@ -234,6 +241,7 @@ class geofenceViewWidget(ctk.CTkFrame):
             card = GeofenceCardWidget(self.scrollable_widget, geofence, self.geofence_selected, self.drone_colors)
             card.grid(row=0, column=index, padx=5, pady=5)
             self.geofence_card_list.append(card)
+            index+=1
 
     def create_main_frame(self):
         self.configure(height=900,

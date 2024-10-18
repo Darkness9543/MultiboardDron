@@ -41,6 +41,7 @@ def hex_to_rgba(hex_colors, alpha=128):
 
     return rgba_colors
 
+
 class GeofenceCardWidget(ctk.CTkFrame):
     def __init__(self, root, geofence, geofence_selected_callback, drone_colors,
                  width: int = 274,
@@ -52,11 +53,13 @@ class GeofenceCardWidget(ctk.CTkFrame):
         self.height = height
         self.fg_color = fg_color
         self.geofence = geofence
+        self.drone_colors = drone_colors
         self.configure(fg_color=self.fg_color, width=self.width, height=self.height)
         self.grid_propagate(False)
         print(f"Drone_colors: {drone_colors}")
         drone_colors = hex_to_rgba(drone_colors)
-        self.map_image, center_position = gml.create_map_image(geofence_vector=self.geofence.Coordinates, colors=drone_colors)
+        self.map_image, center_position = gml.create_map_image(geofence_vector=self.geofence.Coordinates,
+                                                               colors=drone_colors)
         self.map_image_CTk = CTkImage(light_image=self.map_image, dark_image=self.map_image, size=(200, 180))
         self.button = ctk.CTkButton(self,
                                     fg_color="#baaea6",
@@ -73,20 +76,25 @@ class GeofenceCardWidget(ctk.CTkFrame):
         self.button.image = self.map_image_CTk
 
         self.count = ctk.CTkButton(self,
-                              fg_color="#2e1200",
-                              bg_color="#baaea6",
-                              text_color="white",
-                              width=20,
-                              text=str(geofence.DroneCount),
-                              hover=False, state="disabled")
+                                   fg_color="#2e1200",
+                                   bg_color="#baaea6",
+                                   text_color="white",
+                                   width=20,
+                                   text=str(geofence.DroneCount),
+                                   hover=False, state="disabled")
         self.count.grid(row=0, column=0, sticky="ne", padx=5, pady=5)
+
+    def update_image(self, geofence_coordinates):
+        map_image, center_position = gml.create_map_image(geofence_vector=geofence_coordinates,
+                                                          colors=self.drone_colors)
+        map_image_CTk = CTkImage(light_image=map_image, dark_image=map_image, size=(200, 180))
+        self.button.configure(image=map_image_CTk)
 
     def hide(self):
         self.grid_remove()
 
-
     def highlight(self):
-        self.button.configure(fg_color="#b7b888")
+        self.button.configure(fg_color="#d9fcd2")
 
     def unhighlight(self):
         self.button.configure(fg_color="#baaea6")

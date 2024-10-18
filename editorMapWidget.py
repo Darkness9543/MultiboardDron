@@ -21,7 +21,7 @@ class EditorMap:
         self.map_widget.grid(row=0, column=0)
         self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}", max_zoom=22)
         self.drone_colors = []
-
+        self.max_drones = max_drones
         self.markers = [[] for _ in range(max_drones)]
         self.coords_list = [[] for _ in range(max_drones)]
         self.coords = [[] for _ in range(max_drones)]
@@ -44,6 +44,32 @@ class EditorMap:
 
         self.map_widget.set_position(41.276448, 1.9888564)
         self.map_widget.set_zoom(20)
+    def load_scenario(self, scenario):
+        geofence_list = scenario.Coordinates
+        for polygon in self.polygons:
+            for polygon_sub in polygon:
+                self.map_widget.delete(polygon_sub)
+        self.polygons = [[] for _ in range(self.max_drones)]
+        for i, drone_list in enumerate(geofence_list):
+            self.polygon_count[i] = 0
+            for shape in drone_list:
+                if shape["type"] == "polygon":
+                    point_list = []
+                    points = shape["waypoints"]
+                    for point in points:
+                        point_list.append([point["lat"], point["lon"]])
+                    if self.polygon_count[i] < 1:
+                        fill_color = self.drone_colors[i]
+                    else:
+                        fill_color = "black"
+                    polygon = self.map_widget.set_polygon(point_list,
+                                                               fill_color=fill_color, outline_color="black",
+                                                               border_width=2)
+                    self.polygon_count[i] += 1
+                    self.polygons[i].append(polygon)
+        self.parent.show_inclusion_geofence(self.polygons[self.selected_drone_index])
+        self.parent.show_exclusion_points(self.coords[self.selected_drone_index],
+                                          self.polygons[self.selected_drone_index])
     def right_click_command_finish(self):
         self.click_first_marker()
     def right_click_command_delete(self):
@@ -170,7 +196,7 @@ class EditorMap:
         self.parent.show_exclusion_points(self.coords[self.selected_drone_index],
                                           self.polygons[self.selected_drone_index])
     def delete_marker_at_position(self, position):
-        if position is 0:
+        if position == 0:
             self.map_widget.delete(self.markers[self.selected_drone_index][position])
             del self.markers[self.selected_drone_index][position]
             del self.coords[self.selected_drone_index][position]

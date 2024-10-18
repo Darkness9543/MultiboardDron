@@ -158,7 +158,7 @@ class DroneMap:
                 if positions:
                     # Draw the exclusion polygon in black
                     polygon = self.map_widget.set_polygon(
-                        positions, fill_color='black', outline_color='black', border_width=2
+                        positions, fill_color='black', outline_color=self.drone_colors[idx]
                     )
                     self.geofence_polygons.append(polygon)
                 else:

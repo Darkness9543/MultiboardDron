@@ -47,7 +47,9 @@ def get_defaults(json_file_path="data/defaults.json"):
 
 class App(ctk.CTk):
     def on_message(self, client, userdata, message):
+        print(f"Is config created {self.drone_config_widget_created}")
         if self.drone_config_widget_created:
+            print(f"Message arrived {message}")
             self.message_queue.put(message)
 
     def __init__(self):
@@ -286,7 +288,9 @@ class App(ctk.CTk):
     def update_root(self):
         self.update()
         self.update_idletasks()
-
+    def update_geofence_list(self):
+        self.geofence_widget.update_geofences()
+        pass
 
 root = App()
 root.mainloop()

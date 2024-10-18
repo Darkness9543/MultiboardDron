@@ -125,6 +125,17 @@ class DroneControlWidget(ctk.CTkFrame):
         self.top_frame.grid_rowconfigure(10, weight=1)
         self.top_frame.grid_propagate(False)
 
+        image = ImageTk.PhotoImage(Image.open("assets/BackIcon.png").resize((20, int(self.top_buttons_height * 0.5))))
+        self.return_button = ctk.CTkButton(self.top_frame,
+                                           text="",
+                                           image=image,
+                                           width=50,
+                                           height=self.top_buttons_height,
+                                           fg_color=self.set_four,
+                                           command=self.return_to_drone_config)
+
+        self.return_button.grid(row=0, column=0, padx=(10, 5), pady=10, sticky="W")
+
     def create_control_frame(self):
         self.control_frame = ctk.CTkFrame(self,
                                           fg_color=brighten_color(self.set_two, 80),
@@ -313,7 +324,13 @@ class DroneControlWidget(ctk.CTkFrame):
                                padx=info_display_padx - 5,
                                pady=button_frame_pady + 20)
         self.initialize_telemetry_info_display(info_display_width)
-
+    def return_to_drone_config(self):
+        self.parent.grid(row=0, column=0, sticky="nw")
+        for drone in self.drones:
+            print("Starting telemetry")
+            print("miMain/autopilotService" + str(drone.DroneId + 1) + "/stopTelemetry\n")
+            self.client.publish("miMain/autopilotService" + str(drone.DroneId + 1) + "/stopTelemetry")
+        self.grid_forget()
     def create_control_type_switch(self):
         def on_nswe_click():
             self.NWSE_buttons_frame.grid(row=0, column=0, padx=5, pady=5, columnspan=3, rowspan=3)

@@ -75,7 +75,7 @@ class GeofenceEditor(ctk.CTkFrame):
         # Color palette
 
         self.parent = parent
-        self.configure(width=width, height=height, fg_color="yellow")
+
         self.grid_propagate(False)
         if color_palette is None:
             color_palette = ["#1E201E",
@@ -87,6 +87,8 @@ class GeofenceEditor(ctk.CTkFrame):
         self.set_two = color_palette[1]
         self.set_three = color_palette[2]
         self.set_four = color_palette[3]
+
+        self.configure(width=width, height=height, fg_color=self.set_one)
 
         self.button_color = self.set_four
 
@@ -102,7 +104,7 @@ class GeofenceEditor(ctk.CTkFrame):
         self.exclusion_point_instances = []
         self.exclusion_geofence_instances = []
 
-        self.input_frame_percent_height = 0.1
+        self.input_frame_percent_height = 0.11
         self.percent_map_width = 0.7
         self.percent_drone_selection_height = 0.3
         self.create_input_frame()
@@ -118,28 +120,28 @@ class GeofenceEditor(ctk.CTkFrame):
     def create_input_frame(self):
         self.input_frame = ctk.CTkFrame(self, width=self.width,
                                         height=int(self.height * self.input_frame_percent_height),
-                                        fg_color="cyan")
+                                        fg_color=self.set_three)
         self.input_frame.grid(row=0, column=0, columnspan=2)
         self.input_frame.grid_propagate(False)
         self.initialize_input_options()
 
     def create_drone_selection_frame(self):
-        self.drone_selection_frame = ctk.CTkFrame(self, fg_color="blue",
+        self.drone_selection_frame = ctk.CTkFrame(self, fg_color=self.set_one,
                                                   width=int(self.width * (1 - self.percent_map_width)),
                                                   height=int(self.height * self.percent_drone_selection_height))
         self.drone_selection_frame.grid(row=1, column=1)
         self.drone_selection_frame.grid_propagate(False)
 
-        drone_selection_frame = ctk.CTkScrollableFrame(self.drone_selection_frame, fg_color="blue",
-                                                       width=int(self.width * (1 - self.percent_map_width)),
-                                                       height=int(self.height * self.percent_drone_selection_height))
-        drone_selection_frame.grid(row=0, column=0)
+        drone_selection_frame = ctk.CTkScrollableFrame(self.drone_selection_frame, fg_color=self.set_two,
+                                                       width=int(self.width * (1 - self.percent_map_width)-40),
+                                                       height=int(self.height * self.percent_drone_selection_height)-40)
+        drone_selection_frame.grid(row=0, column=0, padx=10, pady=10)
         self.drone_selection_frame_scrolleable = drone_selection_frame
 
     def create_points_register_frame(self):
         width = int(self.width * (1 - self.percent_map_width))
         height = int(self.height * (1 - self.percent_drone_selection_height - self.input_frame_percent_height))
-        self.point_register_frame = ctk.CTkFrame(self, fg_color="orange",
+        self.point_register_frame = ctk.CTkFrame(self, fg_color=self.set_one,
                                                  width=width,
                                                  height=height)
         self.point_register_frame.grid(row=2, column=1)
@@ -148,12 +150,13 @@ class GeofenceEditor(ctk.CTkFrame):
         self.create_points_register(width, height)
 
     def create_map_frame(self):
-        width = int(self.width * self.percent_map_width)
-        height = int(self.height * (1 - self.input_frame_percent_height))
+        width = int(self.width * self.percent_map_width)-20
+        height = int(self.height * (1 - self.input_frame_percent_height))-20
         self.map_frame = ctk.CTkFrame(self,
                                       width=width,
-                                      height=height)
-        self.map_frame.grid(row=1, column=0, rowspan=2)
+                                      height=height,
+                                      fg_color=self.set_one)
+        self.map_frame.grid(row=1, column=0, rowspan=2, padx=10, pady=10)
         self.map_frame.grid_propagate(False)
 
         self.editor_map = editorMapWidget.EditorMap(self, self.map_frame, self.drone_colors, height, width,
@@ -163,38 +166,39 @@ class GeofenceEditor(ctk.CTkFrame):
 
     def initialize_input_options(self):
         # Name option
-        self.name_frame = ctk.CTkFrame(self.input_frame, width=200, height=50, fg_color=self.set_three)
-        self.name_label = ctk.CTkLabel(self.name_frame, text="Name", text_color="black", fg_color="transparent")
+        self.name_frame = ctk.CTkFrame(self.input_frame, width=220, height=35, fg_color=self.set_two)
+        self.name_label = ctk.CTkLabel(self.name_frame, text="Name", text_color="white", fg_color="transparent", font=("Helvetica",12,"bold"))
         self.name_textbox = ctk.CTkEntry(self.name_frame, width=150, height=20)
+        self.name_frame.grid_propagate(False)
         self.name_label.grid(row=0, column=0, padx=5, pady=5)
         self.name_textbox.grid(row=0, column=1, padx=5, pady=5)
 
         # Is favourite option
 
-        self.favourite_frame = ctk.CTkFrame(self.input_frame, width=200, height=50, fg_color=self.set_three)
-        self.favourite_label = ctk.CTkLabel(self.favourite_frame, text="Is favourite?", text_color="black")
-        self.favourite_checkbox = ctk.CTkCheckBox(self.favourite_frame, width=150, height=40, text="")
+        self.favourite_frame = ctk.CTkFrame(self.input_frame, width=220, height=35, fg_color=self.set_two)
+        self.favourite_label = ctk.CTkLabel(self.favourite_frame, text="Is favourite?", text_color="white", font=("Helvetica",12,"bold"))
+        self.favourite_checkbox = ctk.CTkCheckBox(self.favourite_frame, width=20, height=20, text="", border_color=self.set_four)
+        self.favourite_frame.grid_propagate(False)
         self.favourite_label.grid(row=0, column=0, padx=5, pady=5)
         self.favourite_checkbox.grid(row=0, column=1, padx=5, pady=5)
 
         # Number of drones option
 
-        self.number_drones_frame = ctk.CTkFrame(self.input_frame, width=200, height=50, fg_color=self.set_three)
-        self.number_drones_label = ctk.CTkLabel(self.number_drones_frame, text="Number drones", text_color="black")
+        self.number_drones_frame = ctk.CTkFrame(self.input_frame, width=200, height=50, fg_color=self.set_two)
+        self.number_drones_label = ctk.CTkLabel(self.number_drones_frame, text="Number of drones", text_color="white", font=("Helvetica",12,"bold"))
         self.number_drones_slider = ctk.CTkSlider(self.number_drones_frame, from_=1, to=self.defaults[3],
                                                   number_of_steps=self.defaults[3] - 1,
                                                   width=100)
-        self.number_drones_label.grid(row=0, column=0, padx=5, pady=5)
+        self.number_drones_label.grid(row=0, column=0, padx=10, pady=5)
         self.number_drones_slider.grid(row=0, column=1, padx=5, pady=5)
-        self.number_display_label = ctk.CTkLabel(self.number_drones_frame, text="1", text_color="black")
-
+        self.number_display_label = ctk.CTkLabel(self.number_drones_frame, text="1", text_color="white", font=("Helvetica",12,"bold"))
+        self.number_display_label.grid(row=0, column=2, padx=(0,10), pady=10, )
         self.number_drones_slider.configure(
             command=lambda value: self.update_value_slider(value))
         self.number_drones_slider.set(1)
-        self.name_frame.grid(row=0, column=0, padx=10, pady=10)
-        self.favourite_frame.grid(row=0, column=1, padx=10, pady=10)
-        self.number_display_label.grid(row=0, column=2, padx=4, pady=10)
-        self.number_drones_frame.grid(row=0, column=2, padx=10, pady=10)
+        self.name_frame.grid(row=0, column=0, padx=10, pady=(10,3))
+        self.favourite_frame.grid(row=1, column=0, padx=10, pady=(3,10))
+        self.number_drones_frame.grid(row=0, column=1, padx=10, pady=10, rowspan=2)
         self.number_drones_slider.set(1)
 
     # Drone selection
@@ -319,6 +323,20 @@ class GeofenceEditor(ctk.CTkFrame):
                 self.exclusion_geofence_instances.append(point_instance)
                 index += 1
 
+    def load_scenario(self, scenario):
+        print(f"Load scenario data: {scenario.Name} , {scenario.DroneCount}, {scenario.IsGeofenceFav}")
+        self.name_textbox.delete(0, 'end')
+        self.name_textbox.insert(0, scenario.Name)
+        self.number_drones_slider.set(scenario.DroneCount)
+        self.update_value_slider(scenario.DroneCount)
+        if self.favourite_checkbox.get() == 0 and scenario.IsGeofenceFav is True:
+            self.favourite_checkbox.select()
+        elif self.favourite_checkbox.get() == 1 and scenario.IsGeofenceFav is True:
+            self.favourite_checkbox.select()
+        else:
+            self.favourite_checkbox.deselect()
+        pass
+        self.editor_map.load_scenario(scenario)
     def save_scenario(self):
         geofence_data = self.editor_map.parse_data()
         if self.favourite_checkbox.get() == 0:

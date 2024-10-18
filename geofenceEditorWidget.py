@@ -98,7 +98,8 @@ class geofenceEditorWidget(ctk.CTkFrame):
         self.fence_picker.grid(pady=(0, 10), padx=5, column=0, row=1, columnspan=10)
         self.fence_picker.grid_propagate(False)
 
-
+    def load_geofence(self, scenario):
+        self.geofence_editor.load_scenario(scenario)
     def load_geofence_list(self):
         file = open('data/GeofenceData.json')
         data = json.load(file)
@@ -125,7 +126,7 @@ class geofenceEditorWidget(ctk.CTkFrame):
     def create_main_frame(self):
         self.configure(height=self.height,
                        width=self.width,
-                       fg_color="green")
+                       fg_color=self.set_one)
         self.pack(pady=(10, 10), padx=10, fill="both", expand=True)
         self.grid_propagate(False)
 
@@ -136,7 +137,7 @@ class geofenceEditorWidget(ctk.CTkFrame):
         self.geofence_viewport_widget = ctk.CTkFrame(self,
                                                      width=width,
                                                      height=height,
-                                                     fg_color=fg_color)
+                                                     fg_color=self.set_one)
         self.geofence_viewport_widget.pack(pady=(10, 10), padx=(0,10), fill="both", expand=True, side="right")
         self.geofence_viewport_widget.grid_propagate(False)
         self.geofence_viewport_widget.update()
@@ -176,6 +177,7 @@ class geofenceEditorWidget(ctk.CTkFrame):
 
     def save_scenario(self):
         self.geofence_editor.save_scenario()
+        self.parent.update_geofence_list()
     def draw_geofence(self, card,
                       width=int(928 * 0.95),
                       height=int(550 * 0.95)):

@@ -133,9 +133,9 @@ def draw_polygons_with_exclusions_on_map(map_image, geofence_vector, zoom, x_ori
         draw_mask = ImageDraw.Draw(mask)
 
         # Handle both Polygon and MultiPolygon
-        if main_shape.type == 'Polygon':
+        if main_shape.geom_type == 'Polygon':
             polygons = [main_shape]
-        elif main_shape.type == 'MultiPolygon':
+        elif main_shape.geom_type == 'MultiPolygon':
             polygons = list(main_shape)
         else:
             continue
@@ -162,7 +162,9 @@ def draw_polygons_with_exclusions_on_map(map_image, geofence_vector, zoom, x_ori
 
         # Composite the overlay onto the map image
         map_image = Image.alpha_composite(map_image, overlay)
-        return map_image
+
+    return map_image  # Moved return statement outside the for-loop
+
 def create_map_image(lat_deg=41.276408, lon_deg=1.9886864, zoom=20, tile_size=256, desired_width=888,
                      desired_height=550,
                      tile_server_url="https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}", geofence_vector=None,
@@ -246,6 +248,7 @@ def display_map_image(image, root):
 
     label = tk.Label(root, image=photo)
     label.grid(row=0 , column=0)
+    root.mainloop()
 
 def display_map_image_test(image):
     root = tk.Tk()
@@ -268,35 +271,125 @@ if __name__ == "__main__":
     geofence_vector = [
         [
             {
-                'type': 'polygon',
-                'waypoints': [
-                    {'lat': 41.2764398, 'lon': 1.9882585},
-                    {'lat': 41.2761999, 'lon': 1.9883537},
-                    {'lat': 41.2763854, 'lon': 1.9890994},
-                    {'lat': 41.2766273, 'lon': 1.9889948}
+                "type": "polygon",
+                "waypoints": [
+                    {
+                        "lat": 41.2764212909765,
+                        "lon": 1.9884126733087157
+                    },
+                    {
+                        "lat": 41.27652711911864,
+                        "lon": 1.9887761126302337
+                    },
+                    {
+                        "lat": 41.276436409293034,
+                        "lon": 1.9889075408719634
+                    },
+                    {
+                        "lat": 41.27633461256084,
+                        "lon": 1.9886151800893401
+                    },
+                    {
+                        "lat": 41.27627229518735,
+                        "lon": 1.9884140144132232
+                    }
                 ]
             },
             {
-                'type': 'polygon',
-                'waypoints': [
-                    {'lat': 41.2764801, 'lon': 1.9886541},
-                    {'lat': 41.2764519, 'lon': 1.9889626},
-                    {'lat': 41.2763995, 'lon': 1.9887963},
+                "type": "polygon",
+                "waypoints": [
+                    {
+                        "lat": 41.27640332077997,
+                        "lon": 1.9884730230115508
+                    },
+                    {
+                        "lat": 41.276317650229934,
+                        "lon": 1.9884609530709838
+                    },
+                    {
+                        "lat": 41.276438596856124,
+                        "lon": 1.9888002525113677
+                    },
+                    {
+                        "lat": 41.27648395178316,
+                        "lon": 1.9887305150769805
+                    }
                 ]
-            },
+            }
+        ],
+        [
             {
-                'type': 'polygon',
-                'waypoints': [
-                    {'lat': 41.2764035, 'lon': 1.9883262},
-                    {'lat': 41.2762160, 'lon': 1.9883537},
-                    {'lat': 41.2762281, 'lon': 1.9884771}
+                "type": "polygon",
+                "waypoints": [
+                    {
+                        "lat": 41.27623601113057,
+                        "lon": 1.9884260843537902
+                    },
+                    {
+                        "lat": 41.276408360220586,
+                        "lon": 1.9889437506936645
+                    },
+                    {
+                        "lat": 41.276485967556965,
+                        "lon": 1.9889598439477538
+                    },
+                    {
+                        "lat": 41.276551480171705,
+                        "lon": 1.9888243923925017
+                    },
+                    {
+                        "lat": 41.27653736976794,
+                        "lon": 1.9886607776425933
+                    },
+                    {
+                        "lat": 41.27646278615447,
+                        "lon": 1.9884207199357604
+                    },
+                    {
+                        "lat": 41.27638114723663,
+                        "lon": 1.988353664710388
+                    },
+                    {
+                        "lat": 41.27631160289275,
+                        "lon": 1.9883469591878509
+                    },
+                    {
+                        "lat": 41.27639727345071,
+                        "lon": 1.9882678340219115
+                    },
+                    {
+                        "lat": 41.27654140131217,
+                        "lon": 1.9884113322042083
+                    },
+                    {
+                        "lat": 41.2765897798237,
+                        "lon": 1.9886741886876678
+                    },
+                    {
+                        "lat": 41.27659078770898,
+                        "lon": 1.9889129052899932
+                    },
+                    {
+                        "lat": 41.27653535399571,
+                        "lon": 1.9890282402776336
+                    },
+                    {
+                        "lat": 41.27640634444439,
+                        "lon": 1.9890496979497527
+                    },
+                    {
+                        "lat": 41.27630656344465,
+                        "lon": 1.9889142463945007
+                    },
+                    {
+                        "lat": 41.27622089276763,
+                        "lon": 1.9885561714910125
+                    },
+                    {
+                        "lat": 41.27616747452387,
+                        "lon": 1.9883858512185668
+                    }
                 ]
-            },
-            {
-                'type': 'circle',
-                'radius': 2,
-                'lat': 41.2763430,
-                'lon': 1.9883953
             }
         ]
     ]
