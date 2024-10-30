@@ -74,10 +74,9 @@ Mainly we will be using GeoFence, and Full Parameter List.
 To set up the simulation you can either start with a single drone. By clicking the "Multirotor" icon, or using the option "Copter Swarm - Multilink", and stating the number of drones. Each drone instance will open a command window that shows the connection IP:Port, in case you are not sure, altough the ones that come by default in the Multiboard are those by default in Mission Planner.
 
 ### Multiboard setup 
-When you start the program, you should be met by the initial
+When you start the program, you should be met by the initial screen: 
 
-
-![image](https://github.com/user-attachments/assets/a92d372f-cbc4-4ce0-9b45-f9986170912d)
+![image](https://github.com/user-attachments/assets/a92d372f-cbc4-4ce0-9b45-f9986170912d | width=400 )
 
 
 
