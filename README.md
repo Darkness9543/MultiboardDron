@@ -42,7 +42,7 @@ To set the environment, open the project and create a virtual environment or use
 Once all of them are installed, try to execute the program. 
 
 ### Mosquitto
-After installing mosquitto, go to the folder where it is. There, create a mosquitto1884.conf file with the follwing: 
+After installing mosquitto, go to the folder where it is. There, create a file named mosquitto1884.conf with the follwing: 
  ```sh
 listener 1884
 allow_anonymous true
@@ -96,10 +96,15 @@ Finally, on the map several **actions** can be performed using a right-click, su
 ### Multiboard setup 
 When you start the program, you should be met by the initial screen: 
 
-<img src="https://github.com/user-attachments/assets/a92d372f-cbc4-4ce0-9b45-f9986170912d" width="600">
+<img src="https://github.com/user-attachments/assets/a92d372f-cbc4-4ce0-9b45-f9986170912d" width="700">
 
 Here, you can choose the number of drones, their connection ports, the scenario and the connection method. A scenario is always required to poceed. 
 When using a simulation, the port defined in MissionPlanner should be used, and when live the COM port used for the telemetry antenna must be written. 
+
+#### Scenario editor
+By navigating the left menu, you can access the editor. Here you can create and modify scenarios, by defining a geofence for each of the drones involved. Simply click on the map and create he shape that you desire. To close the polygon, you can either click on the original point or right-click and complete the geofence automatically. Once the inclusion geofence is done, you can follow the same procedure to create exclusion zones, like for exemple obstacles you want to avoid. Switch drones with the right-side list and create the geofence for every drone, then save and your scenario is ready to go!
+
+<img src="https://github.com/user-attachments/assets/43a11abb-6846-4944-9721-5cc2f2962d03" width="700">
 
 
 
