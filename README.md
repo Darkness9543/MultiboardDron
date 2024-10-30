@@ -76,7 +76,7 @@ To set up the simulation you can either start with a single drone. By clicking t
 ### Multiboard setup 
 When you start the program, you should be met by the initial screen: 
 
-![image](https://github.com/user-attachments/assets/a92d372f-cbc4-4ce0-9b45-f9986170912d | width=400 )
+<img src="https://github.com/user-attachments/assets/a92d372f-cbc4-4ce0-9b45-f9986170912d" width="400">
 
 
 
