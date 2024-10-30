@@ -33,17 +33,42 @@ The main features are:
 
 To replicate this project locally, you can use tools like <a href="https://git-scm.com/">Git</a>, which, once installed, allows you to quickly clone the repository by right clicking your work folder, and using "git bash". This will open a command window for git instructions, where you can use "git clone %THIS_REPO_URL%" to get it locally.
 
-Once you have the code itself, continue by downloading Mission Planner and setting up the environment. I recommend using <a href="https://www.jetbrains.com/pycharm/download/?section=windows">Pycharm Community Edition</a>, which is completly free, and will be the one used from now on for the porpuses of this guide.
+Once you have the code itself, continue by downloading <a href="https://ardupilot.org/planner/docs/mission-planner-installation.html">Mission Planner</a> and setting up the work environment. I recommend using <a href="https://www.jetbrains.com/pycharm/download/?section=windows">Pycharm Community Edition</a>, which is completly free, and will be the one used from now on for the porpuses of this guide.
 To set the environment, open the project and create a virtual environment or use a system interpreter based on the last Python version available. Then proceed to download all the packages, using the "Python Packages" option of Pycharm, that are referenced in the project.  
 
-Once all is installed, try to execute the program. If you want to simulate, you have to set up Mission Planner first.
-### Prerequisites
+Once all is installed, try to execute the program. 
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+
+Production mode, for when you want to use actual drones, can be used anytime, provided you set up correctly all the ports (like COM) that you are going to use for each one.
+
+If you want to simulate, you have to set up Mission Planner first.
+
+### Mission Planner
+
+Mission Planner is a tool that we will be using along this project for two main reasons:
+* Will provide an interface to connect the real drones for calibration and validation porpuses
+* Will allow us to perform simulations with multiple drones, check for their parameters and geofences, and debugging in general.
+First let's discuss the tabs 
+#### Data
+This tab will display the drones status, position, heading, etc.. once they are connected, either by simulation or using real drones.
+#### Plan
+We won't use much this section, just note that you can change your "Home" point here, so everytime you start a simulation, your drones will spawn at that point.
+To do so, just right click anywhere in the map and press "Set Home Here".
+#### Setup
+Used mainly to calibrate the GPS for the Drone when in production. 
+
+This is not needed in Simulation and is necessary only if the drone flies in Loiter mode.
+To calibrate just go to:
+* Mandatory Hardware / Compass / Start   
+
+Then start moving the drone in random directions (with your hands) to start calibrating.  Once the gauges are full, click Reboot.
+
+#### Config
+Here you can check or edit the current drone parameters. The current drone is selected in the top right corner, next to the DISCONNECT/CONNECT icon, using a dropdown menu. 
+
+Mainly we will be using GeoFence, and Full Parameter List.
+#### Simulation
+To set up the simulation you can either start with a single drone. By clicking the "Multirotor" icon, or using the option "Copter Swarm - Multilink", and stating the number of drones. Each drone instance will open a command window that shows the connection IP:Port, in case you are not sure, altough the ones that come by default in the Multiboard are those by default in Mission Planner.
 
 ### Installation
 
