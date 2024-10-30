@@ -76,7 +76,9 @@ To set up the simulation you can either start with a single drone. By clicking t
 ### Multiboard setup 
 When you start the program, you should be met by the initial screen: 
 
-<img src="https://github.com/user-attachments/assets/a92d372f-cbc4-4ce0-9b45-f9986170912d" width="400">
+<img src="https://github.com/user-attachments/assets/a92d372f-cbc4-4ce0-9b45-f9986170912d" width="600">
+
+Here, you can choose the number of drones, their connection ports, the scenario and the connection method. A scenario is always required to poceed. 
 
 
 
