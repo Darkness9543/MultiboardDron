@@ -37,12 +37,12 @@ git clone %THIS_REPO_URL%
  ```
 
 Once you have the code itself, continue by downloading <a href="https://ardupilot.org/planner/docs/mission-planner-installation.html">Mission Planner</a> and setting up the work environment. I recommend using <a href="https://www.jetbrains.com/pycharm/download/?section=windows">Pycharm Community Edition</a>, which is completly free, and will be the one used from now on for the porpuses of this guide.
-To set the environment, open the project and create a virtual environment or use a system interpreter based on the last Python version available. Then proceed to download all the packages, using the "Python Packages" option of Pycharm, that are referenced in the project.  
+To set the environment, open the project and create a virtual environment or use a system interpreter based on the last Python version available. Then proceed to download all the packages that are referenced in the project, using the "Python Packages" section of Pycharm, that can be opened from the bottom left menu.  
 
-Once all is installed, try to execute the program. 
+Once all of them are installed, try to execute the program. 
 
 
-Production mode, for when you want to use actual drones, can be used anytime, provided you set up correctly all the ports (like COM) that you are going to use for each one.
+Production mode is for when you want to use actual drones, so it can be used anytime, provided you set up correctly all the ports (like COM) that you are going to use for each one.
 
 If you want to simulate, you have to set up Mission Planner first.
 
