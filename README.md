@@ -53,7 +53,12 @@ Mission Planner is a tool that we will be using along this project for two main 
 * Will allow us to perform simulations with multiple drones, check for their parameters and geofences, and debugging in general.
 First let's discuss the tabs 
 #### Data
+This section will be used to move and control the drone. On The left submenu, the following sections can be selected:
+#####   Quick
 This tab will display the drones status, position, heading, etc.. once they are connected, either by simulation or using real drones.
+#####   Actions
+This allows to, after creating the done, do basic operations neededfor a mission, such as **Arm/ Disarm**, **RTL**, etc..
+
 #### Plan
 We won't use much this section, just note that you can change your "Home" point here, so everytime you start a simulation, your drones will spawn at that point.
 To do so, just right click anywhere in the map and press "Set Home Here".
@@ -71,7 +76,10 @@ Here you can check or edit the current drone parameters. The current drone is se
 
 Mainly we will be using GeoFence, and Full Parameter List.
 #### Simulation
-To set up the simulation you can either start with a single drone. By clicking the "Multirotor" icon, or using the option "Copter Swarm - Multilink", and stating the number of drones. Each drone instance will open a command window that shows the connection IP:Port, in case you are not sure, altough the ones that come by default in the Multiboard are those by default in Mission Planner.
+To **create the aircraft** you can either start with a single drone, by clicking the "Multirotor" icon, or using the option "Copter Swarm - Multilink", and stating the number of drones. Each drone instance will open a command window that shows the connection IP:Port, in case you are not sure, altough the ones that come by default in the Multiboard are those by default in Mission Planner.
+
+#### Map
+Finally, on the map several **actions** can be performed using a right-click, such as "**Takeoff**" and "**Move here**", which will control the drone, which must be armed first (see Data). 
 
 ### Multiboard setup 
 When you start the program, you should be met by the initial screen: 
