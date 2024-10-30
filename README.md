@@ -54,7 +54,7 @@ Mission Planner is a tool that we will be using along this project for two main 
 First let's discuss the tabs 
 #### Data
 This section will be used to move and control the drone. On The left submenu, the following sections can be selected:
-  &#9; ##### Quick
+  &nbsp;&nbsp;&nbsp;&nbsp; ##### Quick
   This tab will display the drones status, position, heading, etc.. once they are connected, either by simulation or using real drones.
   ##### Actions
   This allows to, after creating the done, do basic operations neededfor a mission, such as **Arm/ Disarm**, **RTL**, etc..
