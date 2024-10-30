@@ -1,8 +1,9 @@
+import queue
 import time
 
 import customtkinter as ctk
 from PIL import Image, ImageTk
-
+import threading
 import GeofenceClass
 from DroneInfoClass import DroneInfo
 from droneConfigSlider import DroneConfigSlider as DroneSlider
@@ -14,7 +15,7 @@ import json
 
 class DroneConfigCard(ctk.CTkFrame):
 
-    def handle_message(self, message):
+    def _handle_message_ui(self, message):
 
         MessageDroneId = int(str(message.topic).split("/")[0].split("autopilotService")[1])
         ReceivedInfoType = str(message.topic).split("/")[2]
@@ -64,7 +65,7 @@ class DroneConfigCard(ctk.CTkFrame):
 
     def __init__(self, parent, root, client, position, geofences, drone_color,
                  id, port,
-                 width: int = 300,
+                 width: int = 320,
                  height: int = 750,
                  color_palette: None = None):
         super().__init__(master=root)
@@ -92,12 +93,13 @@ class DroneConfigCard(ctk.CTkFrame):
         self.drone = DroneInfo(geofence=geofences, DroneId=self.id)
 
         # Handling connection to client
-        print(f"autopilotService{self.id+1}/miMain/parameters")
-        print(f"autopilotService{self.id+1}/miMain/connected")
         self.client.subscribe(f"autopilotService{self.id+1}/miMain/parameters")
         self.client.subscribe(f"autopilotService{self.id+1}/miMain/connected")
         self.client.subscribe(f"autopilotService{self.id+1}/miMain/disconnected")
         self.client.subscribe(f"autopilotService{self.id+1}/miMain/geofenceSet")
+
+
+
         print("self.id+1")
         print(self.id+1)
 
@@ -116,6 +118,8 @@ class DroneConfigCard(ctk.CTkFrame):
         else:
             self.grid(row=0, column=self.position, padx=5, pady=10)
         self.grid_propagate(False)
+
+
 
         # Title label
 
@@ -144,27 +148,32 @@ class DroneConfigCard(ctk.CTkFrame):
 
         self.indicator = DroneIndicator(self, position=[width - 40, 10])
 
+        # Data frame
+
+        self.data_frame = ctk.CTkScrollableFrame(self, fg_color="transparent", width= 300, height= 620)
+        self.data_frame.grid(row=1, column=0,padx=0, pady=0, rowspan=7)
+
         # Fence altitude max
 
-        self.drone_slider_test = DroneSlider(self,
+        self.drone_slider_test = DroneSlider(self.data_frame,
                                              self.drone,
                                              "Fence_Altitude_Max",
                                              "Geofence max altitude", 1,
-                                             50,
-                                             300,
-                                             25,
+                                             5,
+                                             100,
+                                             95,
                                              pady=(10, 5))
 
         # Fence enabled
 
-        self.drone_fence_enabled = DroneCheckbox(self,
+        self.drone_fence_enabled = DroneCheckbox(self.data_frame,
                                                  self.drone,
                                                  "Fence_Enabled",
                                                  "Fence status", 2)
 
         # Geofence margin
 
-        self.drone_geofence_margin = DroneSlider(self,
+        self.drone_geofence_margin = DroneSlider(self.data_frame,
                                                  self.drone,
                                                  "Geofence_Margin",
                                                  "Geofence margin", 3,
@@ -173,7 +182,7 @@ class DroneConfigCard(ctk.CTkFrame):
                                                  19)
         # Geofence action
 
-        self.drone_geofence_action = DroneMenu(self,
+        self.drone_geofence_action = DroneMenu(self.data_frame,
                                                self.drone,
                                                "Geofence_Action",
                                                "Geofence action", 4,
@@ -183,7 +192,7 @@ class DroneConfigCard(ctk.CTkFrame):
                                                )
         # RTL altitude
 
-        self.drone_rtl_altitude = DroneSlider(self,
+        self.drone_rtl_altitude = DroneSlider(self.data_frame,
                                               self.drone,
                                               "RTL_Altitude",
                                               "RTL Altitude", 5,
@@ -193,7 +202,7 @@ class DroneConfigCard(ctk.CTkFrame):
 
         # Pilot_speed_up
 
-        self.drone_pilot_speed_up = DroneSlider(self,
+        self.drone_pilot_speed_up = DroneSlider(self.data_frame,
                                                 self.drone,
                                                 "Pilot_Speed_Up",
                                                 "Pilot speed up", 6,
@@ -203,7 +212,7 @@ class DroneConfigCard(ctk.CTkFrame):
 
         # FLTMode6
 
-        self.drone_FLTMode6 = DroneMenu(self,
+        self.drone_FLTMode6 = DroneMenu(self.data_frame,
                                         self.drone,
                                         "FLTMode6",
                                         "FLTMode 6", 7,
@@ -211,7 +220,7 @@ class DroneConfigCard(ctk.CTkFrame):
 
         # WP_YAW_BEHAVIOR
 
-        self.drone_WP_YAW_BEHAVIOR = DroneCheckbox(self,
+        self.drone_WP_YAW_BEHAVIOR = DroneCheckbox(self.data_frame,
                                                  self.drone,
                                                  "WP_YAW_BEHAVIOR",
                                                  "Change yaw on movement", 8)
@@ -264,10 +273,48 @@ class DroneConfigCard(ctk.CTkFrame):
                                                    command=lambda: self.reconnect())
         self.reconnect_button.place(x=10, y=10)
 
-        self.client.publish(f"miMain/autopilotService{self.id + 1}/connect")
+
         print(self.geofence.Coordinates[self.drone.DroneId][0]['type'])
 
+        # Queue for thread-safe GUI updates
+        self.gui_queue = queue.Queue()
 
+        # Start the background thread for handling messages
+        self.stop_event = threading.Event()
+        self.thread = threading.Thread(target=self.process_messages, daemon=True)
+        self.thread.start()
+
+        # Periodically check the queue for GUI updates
+        self.after(100, self.process_gui_queue)
+
+        self.after(100, self.connect)
+
+
+    def process_gui_queue(self):
+        self.after(40, self.process_gui_queue)
+
+    def handle_message(self, message):
+        """
+        This method is called from the MQTT client's callback.
+        It puts the message into a thread-safe queue for processing.
+        """
+        self.gui_queue.put(message)
+
+    def process_messages(self):
+        """
+        Background thread that processes incoming messages.
+        """
+        while not self.stop_event.is_set():
+            try:
+                # Wait for a message from the queue
+                message = self.gui_queue.get(timeout=3)
+                self._handle_message_ui(message)
+            except queue.Empty:
+                continue  # No message received, continue waiting
+    def destroy(self):
+        self.stop_event.set()
+        self.thread.join()
+        super().destroy()
     def update_values(self,
                       FENCE_ALT_MAX,
                       FENCE_ENABLE,
@@ -318,7 +365,11 @@ class DroneConfigCard(ctk.CTkFrame):
     def share_config(self):
         self.parent.share_config(self.drone)
 
-    def reconnect(self):
+    def connect(self):
         self.indicator.set_state("Disconnected")
+        self.client.publish(f"miMain/autopilotService{self.id + 1}/disconnect")
         self.client.publish(f"miMain/autopilotService{self.id + 1}/connect")
+    def reconnect(self):
+        self.parent.parent.restart_autopilot(self.id)
+        self.after(200, lambda: self.client.publish(f"miMain/autopilotService{self.id + 1}/connect"))
 

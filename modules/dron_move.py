@@ -80,7 +80,7 @@ def _move_distance (self, direction, distance, callback=None, params = None):
     time.sleep (5)
     # espero en este bucle hasta que se ha alcanzado a altura indicada
     while True:
-        msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking=True, timeout=3)
+        msg = self.message_handler.wait_for_message('GLOBAL_POSITION_INT', timeout=3)
         if msg:
             msg = msg.to_dict()
             vx =  float(msg['vx'])

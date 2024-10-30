@@ -34,11 +34,11 @@ def drop(self):
             2006,  # PWM value
             0, 0, 0, 0, 0)
 
-    time.sleep(1)
+
     self.vehicle.mav.command_long_send(
             0, 0, mavutil.mavlink.MAV_CMD_DO_SET_SERVO, 0,
             11,  # servo output number
             1000,  # PWM value
             0, 0, 0, 0, 0)
 
-    time.sleep(2)
+

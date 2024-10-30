@@ -41,17 +41,21 @@ def _record_local_telemetry_info(self, msg):
         self.position = [msg.x, msg.y, msg.z]
 
 def _connect(self, connection_string, baud, callback=None, params=None):
+    print("Flag 0")
     self.vehicle = mavutil.mavlink_connection(connection_string, baud)
-    self.vehicle.wait_heartbeat()
+    self.message_handler = MessageHandler(self.vehicle)
+    print("Flag 0.1")
+    self.message_handler.wait_for_message('HEARTBEAT', timeout=1)
+    print("Flag 0.2")
     self.state = "connected"
     self.takeTelemetry = True
+    print("Flag 1")
 
-    self.message_handler = MessageHandler(self.vehicle)
 
     self.message_handler.register_handler('HEARTBEAT', self._handle_heartbeat)
     self.message_handler.register_handler('GLOBAL_POSITION_INT', self._record_telemetry_info)
     self.message_handler.register_handler('LOCAL_POSITION_NED', self._record_local_telemetry_info)
-
+    print("Flag 2")
     # Pido datos globales
     self.vehicle.mav.command_long_send(
         self.vehicle.target_system, self.vehicle.target_component,
@@ -61,6 +65,7 @@ def _connect(self, connection_string, baud, callback=None, params=None):
         0, 0, 0, 0,  # Unused parameters
         0
     )
+    print("Flag 3")
     # Pido también datos locales
     self.vehicle.mav.command_long_send(
         self.vehicle.target_system, self.vehicle.target_component,
@@ -70,6 +75,7 @@ def _connect(self, connection_string, baud, callback=None, params=None):
         0, 0, 0, 0,  # Unused parameters
         0
     )
+    print("Flag 4")
 
     if callback != None:
         if self.id == None:
@@ -82,6 +88,7 @@ def _connect(self, connection_string, baud, callback=None, params=None):
                 callback(self.id)
             else:
                 callback(self.id, params)
+    print("Flag 5")
 
 
 def connect(self,
@@ -91,27 +98,21 @@ def connect(self,
             blocking=True,
             callback=None,
             params=None):
-    if self.state == 'disconnected':
-        self.frequency = freq
-        if blocking:
-            self._connect(connection_string, baud)
-            print('ya estoy conectado')
-        else:
-            connectThread = threading.Thread(target=self._connect, args=[connection_string, baud, callback, params, ])
-            connectThread.start()
-        return True
-    else:
-        return False
+    self.frequency = freq
+    print("Connecting...")
+    self._connect(connection_string, baud)
+    print('ya estoy conectado')
+
 
 
 def disconnect(self):
-    if self.state == 'connected':
-        self.state = "disconnected"
-        # paramos el envío de datos de telemetría
-        self.stop_sending_telemetry_info()
-        self.stop_sending_local_telemetry_info()
-        time.sleep(1)
+    print("Disconnecting...")
+    self.state = "disconnected"
+    if self.message_handler:
+        self.message_handler.stop()
+    # paramos el envío de datos de telemetría
+    self.stop_sending_telemetry_info()
+    self.stop_sending_local_telemetry_info()
+    if hasattr(self, "vehicle"):
         self.vehicle.close()
-        return True
-    else:
-        return False
+    return True

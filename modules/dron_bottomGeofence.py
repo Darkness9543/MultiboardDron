@@ -8,7 +8,7 @@ def _minAltChecking (self, processBreach = None):
         print ('modo ', self.flightMode, 'state ', self.state)
         if self.state == 'flying' and self.flightMode != 'LAND' and self.flightMode != 'RTL':
             # si estoy retornando o aterrizando no quiero que actue el geofence
-            msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking=True, timeout=3)
+            msg = self.message_handler.wait_for_message('GLOBAL_POSITION_INT', timeout=3)
             if msg:
                 msg = msg.to_dict()
                 alt = float(msg['relative_alt'] / 1000)
@@ -24,7 +24,8 @@ def _minAltChecking (self, processBreach = None):
                     self.vehicle.mav.set_mode_send(
                         self.vehicle.target_system,
                         mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED, mode_id)
-                    msg = self.vehicle.recv_match(type='COMMAND_ACK', blocking=True, timeout=3)
+                    msg = self.message_handler.wait_for_message('COMMAND_ACK', timeout=3)
+
                     self.flightMode = 'GUIDED'
                     # preparo el comando para elevar la altura del dron 1 metro
                     cmd = mavutil.mavlink.MAVLink_set_position_target_local_ned_message(
@@ -51,7 +52,7 @@ def _minAltChecking (self, processBreach = None):
                         # le indico al dron que se eleve metro a metro hasta que esté por encima del límite
                         self.vehicle.mav.send(cmd)
                         time.sleep(0.25)
-                        msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking=True, timeout=3)
+                        msg = self.message_handler.wait_for_message('GLOBAL_POSITION_INT', timeout=3)
                         if msg:
                             msg = msg.to_dict()
                             alt = float(msg['relative_alt'] / 1000)
@@ -62,9 +63,8 @@ def _minAltChecking (self, processBreach = None):
                     self.vehicle.mav.set_mode_send(
                         self.vehicle.target_system,
                         mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED, mode_id)
-                    msg = self.vehicle.recv_match(type='COMMAND_ACK', blocking=True, timeout=3)
 
-                    time.sleep(5)
+                    time.sleep(2)
                     self.flightMode = 'LOITER'
                     if processBreach != None:
                         processBreach('in')
@@ -91,8 +91,8 @@ def _minAltChecking2 (self, processBreach = None):
                 self.vehicle.mav.set_mode_send(
                     self.vehicle.target_system,
                     mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED, mode_id)
-                msg = self.vehicle.recv_match(type='COMMAND_ACK', blocking=True, timeout=3)
 
+                msg = self.message_handler.wait_for_message('COMMAND_ACK', timeout=3)
                 # preparo el comando para elevar la altura del dron 1 metro
                 cmd = mavutil.mavlink.MAVLink_set_position_target_local_ned_message(
                             10,  # time_boot_ms (not used)
@@ -125,7 +125,7 @@ def _minAltChecking2 (self, processBreach = None):
                 self.vehicle.mav.set_mode_send(
                     self.vehicle.target_system,
                     mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED, mode_id)
-                msg = self.vehicle.recv_match(type='COMMAND_ACK', blocking=True, timeout=3)
+                msg = self.message_handler.wait_for_message('COMMAND_ACK', timeout=3)
                 processBreach('in')
         # esto lo hago con mucha frecuencia para disparar el breach justo cuando se produce
         time.sleep (0.25)

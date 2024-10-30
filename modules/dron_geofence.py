@@ -284,19 +284,19 @@ def _setScenario(self, scenario, callback=None, params = None):
         len (wploader),
         mission_type=mavutil.mavlink.MAV_MISSION_TYPE_FENCE
     )
-    ack_msg = self.message_handler.wait_for_message('COMMAND_ACK', timeout=3)
     # ahora enviamos los comandos
     while True:
         # esperamos a que nos pida el siguiente
-        msg = self.message_handler.wait_for_message('MISSION_REQUEST', timeout=1)
+        print(f"Mission message. Receiving msg")
+        msg = self.message_handler.wait_for_message('MISSION_REQUEST', timeout=4)
+        print(f"Mission message. Received msg")
+
         self.vehicle.mav.send(wploader[msg.seq])
         if msg.seq == len(wploader) - 1:
             # ya los hemos enviado todos
             print("Enviados todos")
             break
 
-    msg = self.message_handler.wait_for_message('MISSION_ACK', timeout=3)
-    print("Mission ack enviado")
 
     if callback != None:
         if self.id == None:

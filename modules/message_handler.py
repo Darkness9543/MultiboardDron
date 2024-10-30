@@ -16,7 +16,7 @@ class MessageHandler:
 
     def _message_loop(self):
         while self.running:
-            msg = self.vehicle.recv_match(blocking=True, timeout=1)
+            msg = self.vehicle.recv_match(blocking=True, timeout=None)
             if msg:
                 msg_type = msg.get_type()
 

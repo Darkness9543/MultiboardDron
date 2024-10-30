@@ -43,14 +43,14 @@ class droneFrame(ctk.CTkFrame):
 
         # Port/Connection String Label
         self.port_label = ctk.CTkLabel(self, text="Connection string:")
-        self.port_label.grid(row=0, column=1, padx=10, pady=5, sticky="nw")
+        self.port_label.grid(row=0, column=1, padx=60, pady=5, sticky="nw")
         # Port/Connection String Textbox with blended background color
         self.port_textbox = ctk.CTkEntry(
             self,
             width=150,
             fg_color=self.set_four  # Set the blended color as the background
         )
-        self.port_textbox.grid(row=0, column=1, padx=5, pady=(35, 10), sticky="nw")
+        self.port_textbox.grid(row=0, column=1, padx=50, pady=(35, 10), sticky="E")
         self.port_textbox.grid_propagate(False)
 
         # Switch
@@ -60,11 +60,11 @@ class droneFrame(ctk.CTkFrame):
                                     command=lambda var=self.state_var, sw=None: switch_callback,
                                     fg_color=self.set_one,
                                     progress_color=self.set_four)
-        self.switch.grid(row=0, column=2, padx=(10, 0), pady=(17), sticky="nw")
+        #self.switch.grid(row=0, column=2, padx=(10, 0), pady=(17), sticky="nw")
 
         # Label beneath the switch
         self.switch_label = ctk.CTkLabel(self, text="Global")
-        self.switch_label.grid(row=0, column=2, padx=8, pady=(40, 5), sticky="nw")
+        #self.switch_label.grid(row=0, column=2, padx=8, pady=(40, 5), sticky="nw")
 
         # Update switch label on toggle
         self.switch.configure(command=self.update_switch_label)

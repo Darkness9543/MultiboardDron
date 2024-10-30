@@ -243,7 +243,6 @@ class App(ctk.CTk):
                 connection_status.append(False)
 
 
-        time.sleep(2)
         self.DroneConfigPanel.grid_remove()
         self.ControlPanel = ctk.CTkFrame(self.TabDrones, height=850, width = 1660,
                                            fg_color="#bac1c5")
@@ -418,7 +417,6 @@ class App(ctk.CTk):
         }
         payload = position_to_direction.get(position)
 
-        time.sleep(0.1)
 
         self.client.publish("miMain/autopilotService" + str(drone_num + 1) + "/move", payload)
 
@@ -714,7 +712,6 @@ class App(ctk.CTk):
                 drone_panel.grid(row=0, column=i, padx=(30, 10), pady=(50, 50))
             else:
                 drone_panel.grid(row=0, column=i, padx=(10, 10), pady=(50, 50))
-        time.sleep(4)
         self.initialize_config_options()
 
     def restore_drone_config_view(self):

@@ -94,7 +94,7 @@ def _uploadMission (self, mission, callback=None, params = None):
         mavutil.mavlink.MAV_CMD_GET_HOME_POSITION,
         0, 0, 0, 0, 0, 0, 0, 0)
     print ('voy a pedir el home')
-    msg = self.vehicle.recv_match(type='HOME_POSITION', blocking=True)
+    msg = self.message_handler.wait_for_message('HOME_POSITION', timeout=2)
     msg = msg.to_dict()
     lat = msg['latitude']
     lon = msg['longitude']
@@ -146,7 +146,7 @@ def _uploadMission (self, mission, callback=None, params = None):
     self.vehicle.mav.mission_clear_all_send( self.vehicle.target_system,  self.vehicle.target_component)
     msg = None
     while not msg:
-        msg = self.vehicle.recv_match(type='MISSION_ACK', blocking=True, timeout = 3)
+        msg = self.message_handler.wait_for_message('MISSION_ACK', timeout=3)
     # Enviamos el numero de items de la nueva misión
     self.vehicle.waypoint_count_send(len(wploader))
 
@@ -154,7 +154,7 @@ def _uploadMission (self, mission, callback=None, params = None):
     print ('vamos a enviar los items')
 
     for i in range(len(wploader)):
-        msg = self.vehicle.recv_match(type=['MISSION_REQUEST_INT', 'MISSION_REQUEST'], blocking=True, timeout = 3)
+        msg = self.message_handler.wait_for_message(['MISSION_REQUEST_INT', 'MISSION_REQUEST'], timeout=3)
         print(f'Sending waypoint {msg.seq}/{len(wploader) - 1}')
         self.vehicle.mav.send(wploader[msg.seq])
 
@@ -163,7 +163,7 @@ def _uploadMission (self, mission, callback=None, params = None):
 
     msg = None
     while not msg:
-        msg = self.vehicle.recv_match(type='MISSION_ACK', blocking=True, timeout = 3)
+        msg = self.message_handler.wait_for_message('MISSION_ACK', timeout=3)
 
 
     if callback != None:
@@ -190,7 +190,7 @@ def _executeMission (self, callback=None, params = None):
         self.vehicle.target_system,
         mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
         mode_id)
-    arm_msg = self.vehicle.recv_match(type='COMMAND_ACK', blocking=True, timeout =3)
+    arm_msg = self.message_handler.wait_for_message('COMMAND_ACK', timeout=3)
 
 
     self.vehicle.mav.command_long_send(self.vehicle.target_system, self.vehicle.target_component,
@@ -205,9 +205,9 @@ def _executeMission (self, callback=None, params = None):
 
     self.state = 'flying'
     # esperamos a que acabe la mision
-    time.sleep(10)
+    time.sleep(2)
     while True:
-        msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking=True, timeout = 3)
+        msg = self.message_handler.wait_for_message('GLOBAL_POSITION_INT', timeout=3)
         if msg:
             msg = msg.to_dict()
             alt = float(msg['relative_alt'] / 1000)

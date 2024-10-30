@@ -73,7 +73,6 @@ class DroneConfigWidget(ctk.CTkFrame):
         self.create_set_parameters_all_button()
         self.create_get_parameters_all_button()
 
-    # Style to make the scroll bar transparent
     def receive_message(self, message):
         topic_parts = message.topic.split('/')
         service_part = topic_parts[0]
@@ -89,7 +88,6 @@ class DroneConfigWidget(ctk.CTkFrame):
             else:
                 print(f"Received message for unknown Drone ID: {MessageDroneId}")
         except:
-            time.sleep(1)
             if self.drone_control_created:
                 self.drone_control.receive_messaage(message)
             if MessageDroneId - 1 in self.drone_card_list:
@@ -97,10 +95,7 @@ class DroneConfigWidget(ctk.CTkFrame):
                 drone_card.handle_message(message)
             else:
                 print(f"Received message for unknown Drone ID: {MessageDroneId}")
-    def hide_scrollbar(self, scrollable_frame):
-        scrollbar = scrollable_frame._scrollbar
-        scrollbar.configure(width=0, height=0, corner_radius=0)
-        scrollbar.grid_forget()  # Remove from grid layout
+
 
     def create_main_frame(self):
         self.configure(height=self.height,
@@ -116,10 +111,7 @@ class DroneConfigWidget(ctk.CTkFrame):
         percent_padding = 0.05
         self.main_frame_scrolleable = ctk.CTkScrollableFrame(self,
                                                              orientation="horizontal",
-                                                             height=int(self.card_height +
-                                                                        (self.height - self.top_frame_height) *
-                                                                        percent_padding / 2)+ 50,
-                                                             scrollbar_button_color=self.set_four,
+                                                             height= 870,
                                                              width=int(self.width * (1 - percent_padding)),
                                                              fg_color=self.set_three,
                                                              corner_radius=3)
@@ -127,7 +119,9 @@ class DroneConfigWidget(ctk.CTkFrame):
                                          column=0,
                                          padx=int(self.width * percent_padding / 2),
                                          pady=int(self.top_frame_height + (
-                                                 self.height - self.top_frame_height) * percent_padding / 2))
+                                                 self.height - self.top_frame_height) * percent_padding / 2)-10,
+                                         sticky="nsew")
+
 
     def create_top_frame(self):
         self.top_frame = ctk.CTkFrame(self,
@@ -147,8 +141,7 @@ class DroneConfigWidget(ctk.CTkFrame):
         # self.top_frame_divider.grid(row=10, column=0, sticky="S")
 
     def create_drone_config_instances(self):
-        if len(self.connection_ports) < 4:
-            self.hide_scrollbar(self.main_frame_scrolleable)
+
         for droneId in range(0, len(self.connection_ports)):
             print("Creating card config..." + str(droneId))
             drone_config_card = DroneConfigCard(self,
@@ -215,7 +208,8 @@ class DroneConfigWidget(ctk.CTkFrame):
                                                   drone.Geofence_Action,
                                                   drone.RTL_Altitude,
                                                   drone.Pilot_Speed_Up,
-                                                  drone.FLTMode6)
+                                                  drone.FLTMode6,
+                                                  drone.WP_YAW_BEHAVIOR)
 
     def proceed(self):
         self.set_parameters_for_all()

@@ -29,7 +29,6 @@ def _getParams(self,parameters,  callback=None):
             message['param_id']: message["param_value"]
         })
         print ('ya tengo otro')
-    print (result)
     # reactivo la toma de datos de telemetria
     self.takeTelemetry = True
 

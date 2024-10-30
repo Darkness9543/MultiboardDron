@@ -40,8 +40,8 @@ def get_connection_data(json_file_path="data/defaults.json"):
 
 class geofencePicker(ctk.CTkFrame):
     def __init__(self, parent, root, defaults,
-                 width: int=350,
-                 height: int=600,
+                 width: int = 350,
+                 height: int = 600,
                  number_of_drones: int = 2,
                  color_palette=None):
         super().__init__(master=root)
@@ -66,7 +66,6 @@ class geofencePicker(ctk.CTkFrame):
 
         self.default_connection_data = defaults[0]
         self.default_port_data = defaults[1]
-        print(defaults[2])
         self.drone_colors = defaults[2]
 
         self.is_sim = True
@@ -91,7 +90,6 @@ class geofencePicker(ctk.CTkFrame):
         self.drone_count_color = self.set_one
         self.number_filter = 1
 
-
         # Initializing
 
         self.create_main_frame()
@@ -99,10 +97,6 @@ class geofencePicker(ctk.CTkFrame):
         self.load_geofence_list()
         self.create_geofence_picker_list()
         self.create_search_widget()
-
-
-
-
 
     def create_geofence_picker_list(self):
         # Create and pack the scrollable frame below the selector
@@ -117,7 +111,6 @@ class geofencePicker(ctk.CTkFrame):
 
         self.scrollable_widget.grid(row=1, column=0, sticky="w", padx=(10, 10), pady=(10, 5))
 
-
     def validate_input(self, input_str):
         try:
             number = int(input_str)
@@ -127,7 +120,6 @@ class geofencePicker(ctk.CTkFrame):
                 return False
         except ValueError:
             return False
-
 
     def on_switch_toggle(self):
         """
@@ -142,18 +134,45 @@ class geofencePicker(ctk.CTkFrame):
 
     def create_geofence_cards(self):
         for geofence in self.geofence_list:
-            card = GeofenceCardWidget(self.scrollable_widget, geofence, self.geofence_selected, self.drone_colors)
+            card = GeofenceCardWidget(self.scrollable_widget,
+                                      self, geofence,
+                                      self.geofence_selected,
+                                      self.drone_colors,
+                                      color_palette=self.color_palette)
             self.geofence_card_list.append(card)
+        self.display_geofence_list(self.geofence_list)
 
     def geofence_selected(self, geofence):
         for card in self.geofence_card_list:
             if card.geofence.Name == geofence.Name:
                 card.highlight()
-                self.parent.load_geofence(geofence)
             else:
                 card.unhighlight()
         self.parent.load_geofence(geofence)
 
+    def update_geofences_root(self):
+        self.parent.parent.update_geofence_list()
+
+    def update_geofences(self):
+        self.load_geofence_list()
+        for geofence_card in self.geofence_card_list:
+            geofence_card.destroy()
+        self.geofence_card_list = []
+        self.create_geofence_cards()
+    def display_geofence_list(self, geofence_list):
+            if len(geofence_list) > 0:
+                index = 0
+                for card in self.geofence_card_list:
+                    card.hide()
+                for geofence in geofence_list:
+                    for card in self.geofence_card_list:
+                        if geofence.Name == card.geofence.Name:
+                            card.grid(row=index, column=0, padx=5, pady=3)
+                            index += 1
+
+            else:
+                for card in self.geofence_card_list:
+                    card.hide()
     def create_search_widget(self):
         def fav_button_clicked(fav_button, fav_off_image, fav_on_image):
             if not self.is_fav_selected:
@@ -205,7 +224,7 @@ class geofencePicker(ctk.CTkFrame):
                     for card in self.geofence_card_list:
                         if geofence.Name == card.geofence.Name:
                             card.grid(row=index, column=0, padx=5, pady=3)
-                            index+=1
+                            index += 1
 
             else:
                 for card in self.geofence_card_list:
@@ -213,7 +232,6 @@ class geofencePicker(ctk.CTkFrame):
 
         self.is_fav_selected = False
         self.number_filter = 0
-
 
         # Search box
 
@@ -230,6 +248,7 @@ class geofencePicker(ctk.CTkFrame):
 
         self.create_geofence_cards()
         display_geofence_list(self.geofence_list)
+
     def load_geofence_list(self):
         file = open('data/GeofenceData.json')
         data = json.load(file)
@@ -247,7 +266,6 @@ class geofencePicker(ctk.CTkFrame):
                 coordinates)
             geofence_list.append(geofence)
         self.geofence_list = geofence_list
-        print ("N geofences", len(geofence_list))
 
     def create_main_frame(self):
 
@@ -256,7 +274,6 @@ class geofencePicker(ctk.CTkFrame):
                        fg_color=self.set_three)
 
         # Place the frame
-
 
     def set_color_palette(
             self,

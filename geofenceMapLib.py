@@ -43,10 +43,20 @@ def meters_to_pixels(meters, lat, zoom, tile_size):
     pixels = meters / resolution
     return pixels
 
+def extract_polygons(geometry):
+    polygons = []
+    if geometry.geom_type == 'Polygon':
+        polygons.append(geometry)
+    elif geometry.geom_type in ['MultiPolygon', 'GeometryCollection']:
+        for geom in geometry.geoms:
+            polygons.extend(extract_polygons(geom))
+    else:
+        # Ignore other geometry types (e.g., LineString)
+        pass
+    return polygons
 
 def draw_polygons_with_exclusions_on_map(map_image, geofence_vector, zoom, x_origin_tile, y_origin_tile, tile_size,
                                          colors):
-    print("Draw polygons")
 
     # Ensure map_image is in RGBA mode to handle transparency
     if map_image.mode != 'RGBA':
@@ -132,13 +142,10 @@ def draw_polygons_with_exclusions_on_map(map_image, geofence_vector, zoom, x_ori
         mask = Image.new('L', map_image.size, 0)  # 'L' mode for grayscale
         draw_mask = ImageDraw.Draw(mask)
 
-        # Handle both Polygon and MultiPolygon
-        if main_shape.geom_type == 'Polygon':
-            polygons = [main_shape]
-        elif main_shape.geom_type == 'MultiPolygon':
-            polygons = list(main_shape)
-        else:
-            continue
+        # Extract all polygons from main_shape
+        polygons = extract_polygons(main_shape)
+        if not polygons:
+            continue  # No polygons to draw
 
         for polygon in polygons:
             # Exterior coordinates
@@ -153,9 +160,7 @@ def draw_polygons_with_exclusions_on_map(map_image, geofence_vector, zoom, x_ori
 
         # Create an overlay image with the shape color and alpha
         overlay = Image.new('RGBA', map_image.size, (0, 0, 0, 0))
-        print(f"Map colors: {colors}")
         color = colors[idx % len(colors)]  # Color should include alpha, e.g., (R, G, B, A)
-        print(f"Map color: {color}")
         color_image = Image.new('RGBA', map_image.size, color)
         # Paste the color image onto the overlay using the mask
         overlay.paste(color_image, (0, 0), mask)
@@ -163,7 +168,7 @@ def draw_polygons_with_exclusions_on_map(map_image, geofence_vector, zoom, x_ori
         # Composite the overlay onto the map image
         map_image = Image.alpha_composite(map_image, overlay)
 
-    return map_image  # Moved return statement outside the for-loop
+    return map_image
 
 def create_map_image(lat_deg=41.276408, lon_deg=1.9886864, zoom=20, tile_size=256, desired_width=888,
                      desired_height=550,

@@ -3,8 +3,8 @@ from PIL import ImageTk, Image
 from telemetryInfoCard import TelemetryInfoCard as TelemetryInfo
 from droneMapWidget import DroneMap
 from repeatingButton import RepeatingButton
-
-
+import keyboard
+import threading
 def brighten_color(hex_color, percent):
     """
     Brighten a color by a given percentage.
@@ -52,10 +52,6 @@ class DroneControlWidget(ctk.CTkFrame):
 
         self.drone_colors = drone_colors
         self.drones = drones
-        print(self.drones)
-        print("\nGEOFENCE")
-        print(self.drones[0].geofence)
-        print("\n")
 
         self.client = client
         self.parent = parent
@@ -82,6 +78,7 @@ class DroneControlWidget(ctk.CTkFrame):
             print("miMain/autopilotService" + str(drone.DroneId + 1) + "/startTelemetry\n")
             self.client.publish("miMain/autopilotService" + str(drone.DroneId + 1) + "/startTelemetry")
         self.telemetry_info_list = []
+        self._setup_key_bindings()
         self.create_main_frame()
         self.create_top_frame()
         self.create_map_frame()
@@ -315,15 +312,25 @@ class DroneControlWidget(ctk.CTkFrame):
         self.info_display = ctk.CTkScrollableFrame(self.content_frame,
                                                    fg_color=self.set_one,
                                                    width=int(info_display_width/2),
-                                                   height=info_display_height - 20,
+                                                   height=info_display_height - 50,
                                                    orientation="vertical")
         self.info_display.grid(columnspan=2,
                                row=5,
                                column=0,
                                sticky="nwse",
                                padx=info_display_padx - 5,
-                               pady=button_frame_pady + 20)
+                               pady=button_frame_pady + 5)
         self.initialize_telemetry_info_display(info_display_width)
+    def create_fix_heading_switch(self):
+        def fix_heading():
+            if self.fix_heading_checkbox.get():
+                print("Fixing heading")
+                self.client.publish("miMain/autopilotService" + str(self.selected_drone.DroneId + 1) + "/fixHeading")
+            else:
+                print("Unfixing heading")
+                self.client.publish("miMain/autopilotService" + str(self.selected_drone.DroneId + 1) + "/unfixHeading")
+        self.fix_heading_checkbox = ctk.CTkCheckBox(self.button_frame, text="Fix heading", fg_color=self.set_four, command=fix_heading, checkmark_color="black")
+        self.fix_heading_checkbox.grid(row=4, column=0, padx=0, pady=5)
     def return_to_drone_config(self):
         self.parent.grid(row=0, column=0, sticky="nw")
         for drone in self.drones:
@@ -422,7 +429,7 @@ class DroneControlWidget(ctk.CTkFrame):
         self.button_frame = ctk.CTkFrame(self.content_frame,
                                          fg_color=self.set_three,
                                          width=200,
-                                         height=button_frame_height + 30)
+                                         height=button_frame_height + 60)
         self.button_frame.grid_propagate(False)
         self.button_frame.grid(row=0, column=0, padx=(15, 0), pady=button_frame_pady, rowspan=4)
 
@@ -437,6 +444,8 @@ class DroneControlWidget(ctk.CTkFrame):
         # Create a switch to alternate between nswe and directional movement
 
         self.create_control_type_switch()
+
+        self.create_fix_heading_switch()
 
         # Create the altitude controls
 
@@ -580,3 +589,28 @@ class DroneControlWidget(ctk.CTkFrame):
         self.current_drone = drone
         for telemetry_info in self.telemetry_info_list:
             telemetry_info.set_current_drone(self.current_drone)
+
+    def _setup_key_bindings(self):
+        """
+        Sets up key bindings for arrow keys to control drone movement.
+        Runs the keyboard listener in a separate daemon thread.
+        """
+        # Define key-event to direction mapping
+        key_direction_map = {
+            'up': 'Fwd',  # Forward
+            'down': 'Back',  # Backward
+            'left': 'Left',
+            'right': 'Right'
+        }
+
+        # Define handlers for each key
+        for key, direction in key_direction_map.items():
+            keyboard.on_press_key(key, lambda e, dir=direction: self.on_moving_press(dir))
+
+        # Optional: Handle key release to stop the drone
+        for key in key_direction_map.keys():
+            keyboard.on_release_key(key, lambda e: self.on_moving_press("Stop"))
+
+        # Start a separate thread to keep the main thread free
+        listener_thread = threading.Thread(target=keyboard.wait, daemon=True)
+        listener_thread.start()

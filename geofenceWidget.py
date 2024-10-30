@@ -27,6 +27,7 @@ class geofenceViewWidget(ctk.CTkFrame):
                              "#3C3D37",
                              "#697565",
                              "#ECDFCC"]
+        self.color_palette = color_palette
 
         set_one = color_palette[0]
         set_two = color_palette[1]
@@ -73,6 +74,9 @@ class geofenceViewWidget(ctk.CTkFrame):
         self.create_search_widget()
         self.create_geofence_viewport()
         self.set_color_palette()
+
+    def update_geofences_root(self):
+        self.parent.update_geofence_list()
     def update_geofences(self):
         self.load_geofence_list()
         for geofence_card in self.geofence_card_list:
@@ -91,12 +95,12 @@ class geofenceViewWidget(ctk.CTkFrame):
         self.parent.on_geofence_selected(geofence)
 
     def create_search_widget(self):
-        def fav_button_clicked(fav_button, fav_off_image, fav_on_image):
+        def fav_button_clicked():
             if not self.is_fav_selected:
-                fav_button.configure(image=fav_on_image)
+                self.fav_button.configure(image=self.fav_button.image_on)
                 self.is_fav_selected = True
             else:
-                fav_button.configure(image=fav_off_image)
+                self.fav_button.configure(image=self.fav_button.image_off)
                 self.is_fav_selected = False
 
             filter_geofence_list()
@@ -112,7 +116,7 @@ class geofenceViewWidget(ctk.CTkFrame):
                                             fg_color="#d4cdcb")
             self.fav_button.image_off = fav_off_image
             self.fav_button.image_on = fav_on_image
-            self.fav_button.configure(command=lambda: fav_button_clicked(self.fav_button, fav_off_image, fav_on_image))
+            self.fav_button.configure(command=lambda: fav_button_clicked())
             self.fav_button.grid(row=0, column=0, sticky="w", padx=(10, 10), pady=(5, 0))
 
         def filter_by_number(number):
@@ -127,7 +131,29 @@ class geofenceViewWidget(ctk.CTkFrame):
                 index += 1
 
             filter_geofence_list()
+        def reset_buttons():
+            for i in self.number_drones_selection_button_list:
+                i.configure(state="normal", fg_color="#feffd4",
+                            text_color="black", hover_color="#c9c1a3",
+                            hover=True, font=("Helvetica", 16, "bold"))
+        def filter_by_text():
+            geofence_list = []
+            Found = False
+            search_text = search_box.get().strip()
 
+            for geofence in self.geofence_list:
+                if search_text.lower() in geofence.Name.lower():
+                    geofence_list.append(geofence)
+                    Found = True
+
+            if Found is True:
+                filter_by_number(0)
+                if self.is_fav_selected is True:
+                    fav_button_clicked()
+                reset_buttons()
+                display_geofence_list(geofence_list)
+            else:
+                print("No scenario found!")
         def filter_geofence_list():
             geofence_list = []
             for geofence in self.geofence_list:
@@ -173,8 +199,13 @@ class geofenceViewWidget(ctk.CTkFrame):
 
         # Search box
 
-        search_box = ctk.CTkTextbox(self.search_widget, height=20, width=200)
+        search_box = ctk.CTkEntry(self.search_widget, height=20, width=200)
         search_box.grid(row=0, column=0, padx=(50, 0), pady=(5, 0), sticky="w")
+        search_box.bind('<Return>', lambda event: filter_by_text())
+        search_image = ImageTk.PhotoImage(Image.open("assets/search_icon.png").resize((20, 20)))
+        search_button = ctk.CTkButton(self.search_widget, height=20, width=20, fg_color=self.color_palette[3],
+                                      image= search_image, text="", command= filter_by_text)
+        search_button.grid(row=0, column=0, padx=(260, 0), pady=(5, 0), sticky="w")
 
         # Creating buttons...
         # - Reset filters
@@ -182,7 +213,7 @@ class geofenceViewWidget(ctk.CTkFrame):
                                                  text_color="black", hover_color="#c9c1a3", hover=True,
                                                  font=("Helvetica", 16, "bold"),
                                                  command=lambda: filter_by_number(0))
-        self.reset_filter_button.grid(row=0, column=0, pady=5, padx=280, sticky="w")
+        self.reset_filter_button.grid(row=0, column=0, pady=5, padx=320, sticky="w")
         self.number_drones_selection_button_list.append(self.reset_filter_button)
 
         # - Favourite
@@ -199,7 +230,7 @@ class geofenceViewWidget(ctk.CTkFrame):
                               text_color="black", hover_color="#c9c1a3",
                               hover=True, font=("Helvetica", 16, "bold"),
                               command=lambda i=i: filter_by_number(i)))
-            self.number_drones_selection_button_list[i].grid(row=0, column=0, pady=5, padx=280 + 35 * i, sticky="w")
+            self.number_drones_selection_button_list[i].grid(row=0, column=0, pady=5, padx=320 + 35 * i, sticky="w")
 
         # Scrollable widget
 
@@ -238,7 +269,7 @@ class geofenceViewWidget(ctk.CTkFrame):
     def create_geofence_cards(self):
         index = 0
         for geofence in self.geofence_list:
-            card = GeofenceCardWidget(self.scrollable_widget, geofence, self.geofence_selected, self.drone_colors)
+            card = GeofenceCardWidget(self.scrollable_widget,self, geofence, self.geofence_selected, self.drone_colors, color_palette=self.color_palette)
             card.grid(row=0, column=index, padx=5, pady=5)
             self.geofence_card_list.append(card)
             index+=1
@@ -252,7 +283,8 @@ class geofenceViewWidget(ctk.CTkFrame):
             column=1,
             sticky='nw',
             padx=5,
-            pady=10
+            pady=10,
+            rowspan=2
         )
         self.grid_propagate(False)
 
@@ -330,7 +362,3 @@ class geofenceViewWidget(ctk.CTkFrame):
         self.geofence_image.configure(
             fg_color=geofence_viewport_widget_color)  # Assuming you want no separate background
 
-        # Configure Geofence Cards
-        for card in self.geofence_card_list:
-            card.set_fg_button_color(geofence_card_primary_color)
-            card.set_fg_count_color(drone_count_color)

@@ -50,7 +50,7 @@ class PointInstance(ctk.CTkFrame):
         self.delete_button = ctk.CTkButton(self, text_color="white", text="x", width=10, height=10,
                                            command=lambda: command_callback(self.index, isGeofence, isInclusion, self))
         self.delete_button.grid(row=0, column=1, pady=5, padx=5)
-        self.grid(row=index, column=0, padx=10, pady=5)
+        self.grid(row=index+1, column=0, padx=10, pady=5)
 
     def hide_me(self):
         self.grid_remove()
@@ -100,17 +100,18 @@ class GeofenceEditor(ctk.CTkFrame):
         self.grid(row=0, column=0, pady=(40, 0))
         self.inclusion_point_instances = []
         self.inclusion_geofence_instances = None
-
+        self.init = False
         self.exclusion_point_instances = []
         self.exclusion_geofence_instances = []
 
         self.input_frame_percent_height = 0.11
         self.percent_map_width = 0.7
         self.percent_drone_selection_height = 0.3
+        self.create_map_frame()
         self.create_input_frame()
         self.create_drone_selection_frame()
         self.create_points_register_frame()
-        self.create_map_frame()
+
         self.drone_instances = []
         self.initialize_drone_selection()
         self.selected_drone = None
@@ -211,12 +212,9 @@ class GeofenceEditor(ctk.CTkFrame):
                                          command=lambda i=i: self.drone_button_selected(i))
             drone_button.grid(row=i, column=0, padx=20, pady=10)
             self.drone_instances[i].button = drone_button
-        self.update_drone_selection(int(self.number_drones_slider.get()))
         self.drone_button_selected(0)
-        print(f"Selected drone {self.selected_drone}")
 
     def drone_button_selected(self, index):
-        print(f"Drone button selected called with index {index}")
         self.update_drone_selection(int(self.number_drones_slider.get()))
         self.highlight_button(index)
         self.selected_drone = self.drone_instances[index]
@@ -232,16 +230,16 @@ class GeofenceEditor(ctk.CTkFrame):
 
     def update_drone_selection(self, num_drones):
         for i, drone in enumerate(self.drone_instances):
-            print(f"i= {i}    drone= {drone.index}")
             if drone.index < num_drones:
                 drone.button.grid(row=i, column=0, padx=10, pady=10)
             else:
                 drone.button.grid_forget()
-        pass
+        self.init = True
 
     def update_value_slider(self, value):
         self.number_display_label.configure(text=str(int(value)))
         self.selected_number_drones = int(value)
+        self.drone_button_selected(0)
         self.update_drone_selection(value)
 
     # Point register
@@ -252,12 +250,21 @@ class GeofenceEditor(ctk.CTkFrame):
         self.inclusion_scrolleable_frame = ctk.CTkScrollableFrame(self.point_register_frame,
                                                                   width=int(parent_width - 4 * padx),
                                                                   height=int(proportion * (parent_height - 7 * pady)))
+        self.inclusion_label = ctk.CTkLabel(self.inclusion_scrolleable_frame,
+                                            text_color="black",
+                                            text= "Inclusion geofence")
+        self.inclusion_label.grid(row=0, column=0, padx=5, pady=5, sticky="NWE")
         self.exclusion_scrolleable_frame = ctk.CTkScrollableFrame(self.point_register_frame,
                                                                   width=int(parent_width - 4 * padx),
                                                                   height=int(
                                                                       (1 - proportion) * (parent_height - 7 * pady)))
+        self.exclusion_label = ctk.CTkLabel(self.exclusion_scrolleable_frame,
+                                            text_color="black",
+                                            text="Exclusion geofences")
+        self.exclusion_label.grid(row=0, column=0, padx=5, pady=5, sticky="NWE")
         self.inclusion_scrolleable_frame.grid(row=0, column=0, padx=padx, pady=pady)
         self.exclusion_scrolleable_frame.grid(row=1, column=0, padx=padx, pady=(0, pady))
+
 
     def delete_marker_callback(self, index, isGeofence, isInclusion, widget):
         print(f"Callback {index}")
@@ -337,20 +344,67 @@ class GeofenceEditor(ctk.CTkFrame):
             self.favourite_checkbox.deselect()
         pass
         self.editor_map.load_scenario(scenario)
+
+    def load_geofence_data(self, filepath="data/GeofenceData.json"):
+        try:
+            with open(filepath, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return {"GeofenceList": []}
+        except json.JSONDecodeError as e:
+            print(f"JSON Decode Error: {e}")
+            return None
+
+    def save_geofence_data(self, data, filepath="data/GeofenceData.json"):
+        try:
+            with open(filepath, 'w') as f:
+                json.dump(data, f, indent=2)
+            return True
+        except IOError as e:
+            print(f"IOError while writing to GeofenceData.json: {e}")
+            return False
     def save_scenario(self):
         geofence_data = self.editor_map.parse_data()
-        if self.favourite_checkbox.get() == 0:
-            isFav = False
+        isFav = bool(self.favourite_checkbox.get())
+        geofence_name = self.name_textbox.get().strip()
+
+        if not geofence_name:
+            print("Geofence name cannot be empty.")
+            return
+
+        geofence = {
+            "droneCount": self.selected_number_drones,
+            "name": geofence_name,
+            "isGeofenceFav": isFav,
+            "coordinates": geofence_data
+        }
+
+        data = self.load_geofence_data()
+        if data is None:
+            return  # JSON was malformed
+
+        geofence_list = data.get("GeofenceList", [])
+
+        # Replace or append the geofence
+        for index, existing_geofence in enumerate(geofence_list):
+            if existing_geofence.get("name") == geofence_name:
+                geofence_list[index] = geofence
+                geofence_exists = True
+                break
         else:
-            isFav = True
-        geofence = {"droneCount": self.selected_number_drones,
-                    "name": self.name_textbox.get(),
-                    "isGeofenceFav": isFav,
-                    "coordinates": geofence_data}
-        print(geofence)
-        with open("data/GeofenceData.json", 'r') as file:
-            data = json.load(file)
-            data['GeofenceList'].append(geofence)
-            updated_json = json.dumps(data, indent=2)
-        with open('data/GeofenceData.json', 'w') as f:
-            json.dump(data, f, indent=2)
+            geofence_list.append(geofence)
+            geofence_exists = False
+
+        data["GeofenceList"] = geofence_list
+
+        if self.save_geofence_data(data):
+            print(f"Scenario '{geofence_name}' has been {'updated' if geofence_exists else 'saved'} successfully.")
+            return True
+        return False
+    def new_scenario(self):
+        self.name_textbox.delete(0, "end")
+        self.update_value_slider(1)
+        if self.favourite_checkbox.get():
+            self.favourite_checkbox.deselect()
+        self.number_drones_slider.set(1)
+        self.editor_map.new_scenario()

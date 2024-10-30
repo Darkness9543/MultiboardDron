@@ -38,7 +38,7 @@ class DroneConfigSlider(ctk.CTkFrame):
         self.set_units_multiplier = 1
         # Changing units from cm to m for some parameters
 
-        if self.drone_data_attribute in ("Fence_Altitude_Max","RTL_Altitude","Pilot_Speed_Up"):
+        if self.drone_data_attribute in ("RTL_Altitude","Pilot_Speed_Up"):
             self.min_value *= 0.01
             self.max_value *= 0.01
 

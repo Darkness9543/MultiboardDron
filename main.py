@@ -47,9 +47,7 @@ def get_defaults(json_file_path="data/defaults.json"):
 
 class App(ctk.CTk):
     def on_message(self, client, userdata, message):
-        print(f"Is config created {self.drone_config_widget_created}")
         if self.drone_config_widget_created:
-            print(f"Message arrived {message}")
             self.message_queue.put(message)
 
     def __init__(self):
@@ -84,7 +82,6 @@ class App(ctk.CTk):
 
         self.ThreadList = []
         self.Autopilots = []
-        self.selected_geofence = None
 
         # Load defaults
 
@@ -122,15 +119,14 @@ class App(ctk.CTk):
 
         # Load images for buttons
         self.images = []
-        for path in ["assets/drone_icon.png", "assets/geofence_icon.png",
-                     "assets/settings_icon.png"]:  # Replace with your image paths
+        for path in ["assets/drone_icon.png", "assets/geofence_icon.png"]:  # Replace with your image paths
             img = Image.open(path)
             img = img.resize((45, 45))  # Adjust size as needed
             self.images.append(ImageTk.PhotoImage(img))
 
         # Create tab buttons
         self.tab_buttons = []
-        for i in range(3):
+        for i in range(2):
             button = ctk.CTkButton(
                 master=self.sidebar_frame,
                 image=self.images[i],
@@ -178,22 +174,21 @@ class App(ctk.CTk):
                                                             text_color="black",
                                                             width=100,
                                                             height=30)
-        self.proceed_to_drone_config_button.grid(row=0, column=0, sticky="nw", padx=10, pady=682)
+        self.proceed_to_drone_config_button.grid(row=0, column=0, padx=10, pady=700, sticky="NW")
 
     def on_switch_toggle_prod_sim(self):
-        print("on switch")
         self.drone_widget.switch_port_sim()
 
     def proceed_to_drone_config(self):
         connection_ports = self.drone_widget.get_connection_ports()
-        print(self.selected_geofence)
+        print(f"Selected geofence Id: {self.selected_geofence}")
         if self.selected_geofence is None:
             print("Error")
         else:
             i = 0
             for port in connection_ports:
                 print("Creating autopilot")
-                autopilot = AutopilotService(port, i + 1)
+                autopilot = AutopilotService(port, i + 1, int(self.drone_widget.option_baud_menu.get()))
                 thread = threading.Thread(target=autopilot.run, name=f"AutopilotThread-{i}")
                 thread.start()
                 self.Autopilots.append(autopilot)
@@ -229,7 +224,7 @@ class App(ctk.CTk):
 
         self.switch_prod_sim_frame = ctk.CTkFrame(self.tabs[0],
                                                   width=120, height=30, fg_color=self.color_palette[2])
-        self.switch_prod_sim_frame.grid(row=0, column=0, padx=130, pady=682, sticky="nw")
+        self.switch_prod_sim_frame.grid(row=0, column=0, padx=120, pady=700, sticky="nw")
         self.switch_prod_sim_frame.grid_propagate(False)
 
         # Switch
@@ -252,10 +247,23 @@ class App(ctk.CTk):
     def on_geofence_selected(self, geofence):
         self.selected_geofence = geofence
         self.drone_widget.update_based_on_geofence(geofence)
+    def restart_autopilot(self, index):
+        self.Autopilots[index].disconnect()
+        self.ThreadList[index].join()
+        self.Autopilots[index] = AutopilotService(self.drone_widget.get_connection_ports()[index], index + 1, int(self.drone_widget.option_baud_menu.get()))
+        self.ThreadList[index] = threading.Thread(target=self.Autopilots[index].run, name=f"AutopilotThread-{index}")
+        self.ThreadList[index].start()
+        self.client.publish(f"miMain/autopilotService{index + 1}/connect")
+
+
 
     def restore_main_view(self):
         for autopilot in self.Autopilots:
-            autopilot.stop()
+            if autopilot is not None:
+                print("Disconnect")
+                print(type(autopilot))
+                autopilot.disconnect()
+        self.Autopilots = []
 
         for thread in self.ThreadList:
             thread.join(timeout=5)  # Adjust timeout as necessary
@@ -290,6 +298,7 @@ class App(ctk.CTk):
         self.update_idletasks()
     def update_geofence_list(self):
         self.geofence_widget.update_geofences()
+        self.geofence_editor.update_geofences()
         pass
 
 root = App()

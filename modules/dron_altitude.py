@@ -16,7 +16,7 @@ def _change_altitude(self, altitude, callback=None, params = None):
                                                                        0))
     # espero hasta que el dron haya alcanzado la altura indicada
     while True:
-        msg = self.vehicle.recv_match(type='GLOBAL_POSITION_INT', blocking=True, timeout=3)
+        msg = self.message_handler.wait_for_message('GLOBAL_POSITION_INT', timeout=3)
         if msg:
             msg = msg.to_dict()
             alt = float(msg['relative_alt'] / 1000)

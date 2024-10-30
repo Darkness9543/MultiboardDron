@@ -61,7 +61,6 @@ class droneSelectionWidget(ctk.CTkFrame):
 
         self.default_connection_data = defaults[0]
         self.default_port_data = defaults[1]
-        print(defaults[3])
         self.drone_colors = defaults[2]
 
         self.is_sim = True
@@ -86,28 +85,39 @@ class droneSelectionWidget(ctk.CTkFrame):
         pass
 
     def create_drone_number_selector(self):
-        # Create and place the label
-        self.drone_number_label = ctk.CTkLabel(self, text="Number of drones: 1")
-        self.drone_number_label.pack(pady=10)
-
-        # Create and configure the slider
+        self.general_config_frame = ctk.CTkFrame(self, height=200, fg_color="transparent")
+        self.general_config_frame.pack(pady=10, padx=10, fill="x")
+        # Drone number selection
+        self.drone_number_label = ctk.CTkLabel(self.general_config_frame, text="Number of drones: 1", text_color="white", font=("Helvetica", 12, "bold"))
+        self.drone_number_label.grid(row=0, column=0, padx=10, pady=5, columnspan=1)
         self.drone_number_slider = ctk.CTkSlider(
-            self,
+            self.general_config_frame,
             from_=1,
             to=self.MAX_DRONES,
             number_of_steps=self.MAX_DRONES - 1,  # Ensures step increments of 1
             command=self.on_slider_move  # Callback when slider is moved
         )
         self.drone_number_slider.set(1)  # Initialize slider to 1
-        self.drone_number_slider.pack(pady=10)
-
-        # Create and place the textbox
+        self.drone_number_slider.grid(row=1, column=0, padx=(10,5), pady=5)
         self.drone_number_textbox = ctk.CTkEntry(
-            self,
+            self.general_config_frame,
             placeholder_text="Enter number of drones"
         )
-        self.drone_number_textbox.pack(pady=10)
+        #self.drone_number_textbox.grid(row=1, column=1, padx=(10,5), pady=5)
         self.drone_number_textbox.bind("<Return>", self.on_textbox_enter)  # Bind Enter key to validation
+
+        # Baud selection
+
+        self.baud_label = ctk.CTkLabel(self.general_config_frame, text="Baud rate", text_color="white", font=("Helvetica", 12, "bold"))
+        self.option_baud_menu = ctk.CTkOptionMenu(self.general_config_frame,
+                                                  values=['1200', '2400', '4800', '9600', '19200', '38400', '57600', '111100',
+                                                          '115200', '230400', '460800', '500000', '625000', '921600'],
+                                                  height=25, width=125, fg_color=self.set_four,
+                                                  button_color=self.set_three, button_hover_color="#E2F1E7",
+                                                  text_color="black")
+        self.option_baud_menu.grid(row=1, column=1, padx=(10,5), pady=5)
+        self.baud_label.grid(row=0, column=1, padx=10, pady=5)
+        self.option_baud_menu.set('115200')
 
 
 
@@ -181,7 +191,6 @@ class droneSelectionWidget(ctk.CTkFrame):
         elif number < current_count:
             # Remove excess drone frames
             for _ in range(current_count - number):
-                print(_)
                 frame = self.drone_frames.pop()
                 frame.destroy()
 
@@ -209,7 +218,7 @@ class droneSelectionWidget(ctk.CTkFrame):
             column=0,
             sticky='nw',
             padx=(10, 5),
-            pady=(10, 200)
+            pady=(10, 10)
         )
         self.grid_propagate(False)
 

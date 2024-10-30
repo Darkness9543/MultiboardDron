@@ -32,7 +32,7 @@ class geofenceEditorWidget(ctk.CTkFrame):
                              "#3C3D37",
                              "#697565",
                              "#ECDFCC"]
-
+        self.color_palette = color_palette
         self.set_one = color_palette[0]
         self.set_two = color_palette[1]
         self.set_three = color_palette[2]
@@ -118,10 +118,6 @@ class geofenceEditorWidget(ctk.CTkFrame):
             geofence_list.append(geofence)
         self.geofence_list = geofence_list
 
-    def create_geofence_cards(self):
-        for geofence in self.geofence_list:
-            card = GeofenceCardWidget(self.scrollable_widget, geofence, self.geofence_selected, self.drone_colors)
-            self.geofence_card_list.append(card)
 
     def create_main_frame(self):
         self.configure(height=self.height,
@@ -155,7 +151,8 @@ class geofenceEditorWidget(ctk.CTkFrame):
                                         width=60,
                                         fg_color=self.set_four,
                                         text="New",
-                                        text_color="black")
+                                        text_color="black",
+                                        command=self.new_scenario)
         self.new_button.place(x=10, y=10)
 
         self.save_button = ctk.CTkButton(self.geofence_viewport_widget,
@@ -167,23 +164,22 @@ class geofenceEditorWidget(ctk.CTkFrame):
                                          command=self.save_scenario)
         self.save_button.place(x=75, y=10)
 
-        self.delete_button = ctk.CTkButton(self.geofence_viewport_widget,
-                                           height=20,
-                                           width=60,
-                                           fg_color=self.set_four,
-                                           text="Delete",
-                                           text_color="black")
-        self.delete_button.place(x=140, y=10)
-
+    def new_scenario(self):
+        self.geofence_editor.new_scenario()
     def save_scenario(self):
-        self.geofence_editor.save_scenario()
-        self.parent.update_geofence_list()
+        saved = self.geofence_editor.save_scenario()
+        if saved:
+            self.parent.update_geofence_list()
     def draw_geofence(self, card,
                       width=int(928 * 0.95),
                       height=int(550 * 0.95)):
         image = ctk.CTkImage(light_image=card.map_image, dark_image=card.map_image, size=(width, height))
         self.geofence_image.configure(image=image, compound="center")
 
+    def update_geofences_root(self):
+        self.parent.update_geofence_list()
+    def update_geofences(self):
+        self.fence_picker.update_geofences()
     def set_color_palette(
             self,
             geofence_frame_color=None,
