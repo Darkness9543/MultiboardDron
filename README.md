@@ -17,7 +17,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Multiboard is an application made with Python integrated in the <a href="https://github.com/dronsEETAC/DroneEngineeringEcosystemDEE">Drone Engineering Ecosystem</a>., for the control and managment of multiple drones and scenarios. The scenarios are composed of geofences that are assigned to each corresponding drone and limits it's horizontal and vertical movement based on each geofence configuration. 
+Multiboard is an application made with Python integrated in the <a href="https://github.com/dronsEETAC/DroneEngineeringEcosystemDEE">Drone Engineering Ecosystem</a>, for the control and managment of multiple drones and scenarios. The scenarios are composed of geofences that are assigned to each corresponding drone and limits it's horizontal and vertical movement based on each geofence configuration. 
 
 The main features are:
 * A robust and easy to use scenario editor
