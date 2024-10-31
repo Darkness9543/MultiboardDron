@@ -37,9 +37,11 @@ git clone %THIS_REPO_URL%
  ```
 
 Once you have the code itself, continue by downloading <a href="https://ardupilot.org/planner/docs/mission-planner-installation.html">Mission Planner</a>, <a href="https://mosquitto.org/">Mosquitto</a> and setting up the work environment. I recommend using <a href="https://www.jetbrains.com/pycharm/download/?section=windows">Pycharm Community Edition</a>, which is completly free, and will be the one used from now on for the porpuses of this guide.
-To set the environment, open the project and create a virtual environment or use a system interpreter based on the last Python version available (At this time, 3.13). Then proceed to download all the packages that are referenced in the project, using the "Python Packages" section of Pycharm, that can be opened from the bottom left menu.  
-
-Once all of them are installed, try to execute the program. 
+To set the environment, open the project and create a virtual environment or use a system interpreter based on the last Python version available (At this time, 3.13). Then proceed to download all the packages that are referenced in the project, by using: 
+```sh
+py -m pip install -r requirements.txt
+```
+If any packages are missing or you want to manage them, use the "Python Packages" section of Pycharm, that can be opened from the bottom left menu. Once all of them are installed, try to execute the program from the file `main.py` or by creating a pycharm configuration that does it for you. 
 
 ### Mosquitto
 This will create a bridge to communicate with the drone. After installing mosquitto, go to the folder where it is. There, create a file named `mosquitto1884.conf` with the follwing: 
