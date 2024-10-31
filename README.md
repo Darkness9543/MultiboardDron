@@ -94,7 +94,7 @@ bind port XXXX for SERIALX
 Finally, on the map several **actions** can be performed using a right-click, such as "**Takeoff**" and "**Move here**", which will control the drone, which must be armed first (see Data). It is quite important to have some patience with Mission Planner, as it requires the sequence Arm -> Takeoff -> Move to be performed timely and in order. 
 
 ## Multiboard setup 
-When you start the program, you should be met by the initial screen: 
+When you start the program, you should be met by the initial screen. You can create a scenario first, or proceed to connect the drones if you already have one. 
 
 ### Initial setup
 
@@ -104,13 +104,12 @@ Here, you can choose the number of drones, their connection ports, the scenario 
 When using a simulation, the port defined in MissionPlanner should be used, and when live the COM port used for the telemetry antenna must be written. 
 
 ### Connection
-By navigating the left menu, you can access the editor. Here you can create and modify scenarios, by defining a geofence for each of the drones involved. Simply click on the map and create he shape that you desire. To close the polygon, you can either click on the original point or right-click and complete the geofence automatically. Once the inclusion geofence is done, you can follow the same procedure to create exclusion zones, like for exemple obstacles you want to avoid. Switch drones with the right-side list and create the geofence for every drone, then save and your scenario is ready to go!
+Here you can edit the parameters and limitations of each individual drone or share one configuration. This is also the moment to check that all drones are connected (green dot), and reconnect those who aren't. 
 
 <img src="??" width="700">
 
 ### Control
-By navigating the left menu, you can access the editor. Here you can create and modify scenarios, by defining a geofence for each of the drones involved. Simply click on the map and create he shape that you desire. To close the polygon, you can either click on the original point or right-click and complete the geofence automatically. Once the inclusion geofence is done, you can follow the same procedure to create exclusion zones, like for exemple obstacles you want to avoid. Switch drones with the right-side list and create the geofence for every drone, then save and your scenario is ready to go!
-
+This is the main view of the program. Here you can move the drones, see their positions and data and visualize their movements and geofences. 
 <img src="??" width="700">
 
 ### Scenario editor
