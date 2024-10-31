@@ -73,6 +73,8 @@ class AutopilotService:
             self.dron.fixHeading()
         if command == "unfixHeading":
             self.dron.unfixHeading()
+        if command == "setGuided":
+            self.dron.set_guided()
         if command == 'setParameters':
             print('Enviada orden de setParameters')
             self.dron.setParams(json.loads(message.payload.decode('utf-8')))

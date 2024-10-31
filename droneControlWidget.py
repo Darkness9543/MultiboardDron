@@ -286,7 +286,7 @@ class DroneControlWidget(ctk.CTkFrame):
         button.grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
     def create_commands_frame(self):
-        button_texts = ["Arm", "Takeoff", "RTL", "Land"]
+        button_texts = ["Arm", "Takeoff", "RTL", "Land","Set guided"]
         for i, text in enumerate(button_texts):
             button = ctk.CTkButton(self.content_frame,
                                    text=text,
@@ -315,7 +315,7 @@ class DroneControlWidget(ctk.CTkFrame):
                                                    height=info_display_height - 50,
                                                    orientation="vertical")
         self.info_display.grid(columnspan=2,
-                               row=5,
+                               row=6,
                                column=0,
                                sticky="nwse",
                                padx=info_display_padx - 5,
@@ -323,14 +323,20 @@ class DroneControlWidget(ctk.CTkFrame):
         self.initialize_telemetry_info_display(info_display_width)
     def create_fix_heading_switch(self):
         def fix_heading():
-            if self.fix_heading_checkbox.get():
-                print("Fixing heading")
-                self.client.publish("miMain/autopilotService" + str(self.selected_drone.DroneId + 1) + "/fixHeading")
-            else:
-                print("Unfixing heading")
-                self.client.publish("miMain/autopilotService" + str(self.selected_drone.DroneId + 1) + "/unfixHeading")
-        self.fix_heading_checkbox = ctk.CTkCheckBox(self.button_frame, text="Fix heading", fg_color=self.set_four, command=fix_heading, checkmark_color="black")
-        self.fix_heading_checkbox.grid(row=4, column=0, padx=0, pady=5)
+            print("Fixing heading")
+            self.client.publish("miMain/autopilotService" + str(self.selected_drone.DroneId + 1) + "/fixHeading")
+        def unfix_heading():
+            print("Unfixing heading")
+            self.client.publish("miMain/autopilotService" + str(self.selected_drone.DroneId + 1) + "/unfixHeading")
+        self.fix_heading_frame = ctk.CTkFrame(self.button_frame, fg_color="transparent")
+        self.fix_heading_frame.grid(row=4, column=0, padx=5, pady=5)
+        self.fix_heading = ctk.CTkButton(self.fix_heading_frame, text="Fix heading", fg_color=self.set_four,
+                                         command=fix_heading, width=80, height=30, text_color="black")
+        self.fix_heading.grid(row=0, column=0, padx=2, pady=5)
+        self.unfix_heading = ctk.CTkButton(self.fix_heading_frame, text="Unfix heading", fg_color=self.set_four,
+                                         command=unfix_heading, width=80, height=30, text_color="black")
+        self.unfix_heading.grid(row=0, column=1, padx=2, pady=5)
+
     def return_to_drone_config(self):
         self.parent.grid(row=0, column=0, sticky="nw")
         for drone in self.drones:
@@ -428,10 +434,10 @@ class DroneControlWidget(ctk.CTkFrame):
         button_frame_pady = 5
         self.button_frame = ctk.CTkFrame(self.content_frame,
                                          fg_color=self.set_three,
-                                         width=200,
+                                         width=230,
                                          height=button_frame_height + 60)
         self.button_frame.grid_propagate(False)
-        self.button_frame.grid(row=0, column=0, padx=(15, 0), pady=button_frame_pady, rowspan=4)
+        self.button_frame.grid(row=0, column=0, padx=(5, 0), pady=button_frame_pady, rowspan=4)
 
         # Setting up North West South East buttons
 
@@ -567,6 +573,9 @@ class DroneControlWidget(ctk.CTkFrame):
             self.client.publish("miMain/autopilotService" + str(drone_num + 1) + "/RTL")
         if button_text == "Land":
             self.client.publish("miMain/autopilotService" + str(drone_num + 1) + "/Land")
+        if button_text == "Set guided":
+            self.client.publish("miMain/autopilotService" + str(drone_num + 1) + "/setGuided")
+
 
         print(f" autopilotService'{drone_num + 1}' has been  instucted to '{button_text}'")
 

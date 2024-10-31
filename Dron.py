@@ -21,7 +21,7 @@ class Dron(object):
         self.frequency = None  #numero de muestras de telemetría por segundo
 
         self.going = False # se usa en dron_nav
-        self.navSpeed = 2 # se usa en dron_nav
+        self.navSpeed = 1 # se usa en dron_nav
         self.direction = 'Stop' # se usa en dron_nav
 
         self.sendTelemetryInfo = False #usado en dron_telemetry
@@ -52,7 +52,7 @@ class Dron(object):
     from modules.dron_arm import arm, _arm
     from modules.dron_takeOff import takeOff, _takeOff
     from modules.dron_RTL_Land import  RTL, Land, _goDown
-    from modules.dron_nav import _prepare_command, go, _startGo, _stopGo, _goingTread, changeHeading, _changeHeading, unfixHeading, fixHeading, changeNavSpeed
+    from modules.dron_nav import _prepare_command, go, _startGo, _stopGo, _goingTread, changeHeading, _changeHeading, unfixHeading, fixHeading, changeNavSpeed, set_guided
     from modules.dron_goto import goto, _goto, _distanceToDestinationInMeters
     from modules.dron_parameters import getParams, _getParams, setParams, _setParams
     from modules.dron_geofence import  setScenario, _setScenario, getScenario, _getScenario, _buildScenario

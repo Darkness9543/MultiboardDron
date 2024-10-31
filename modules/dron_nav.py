@@ -77,6 +77,14 @@ def _startGo(self):
         startGoThread = threading.Thread(target=self._goingTread)
         startGoThread.start()
 
+def set_guided(self):
+    mode = 'GUIDED'
+    # Get mode ID
+    mode_id = self.vehicle.mode_mapping()[mode]
+    self.vehicle.mav.set_mode_send(
+        self.vehicle.target_system,
+        mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+        mode_id)
 
 def _stopGo(self):
     # detengo el thread de navegación
