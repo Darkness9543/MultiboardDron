@@ -44,7 +44,7 @@ py -m pip install -r requirements.txt
 If any packages are missing or you want to manage them, use the "Python Packages" section of Pycharm, that can be opened from the bottom left menu. Once all of them are installed, try to execute the program from the file `main.py` or by creating a pycharm configuration that does it for you. 
 
 ### Mosquitto
-This will create a bridge to communicate with the drone. After installing mosquitto, go to the created folder for the program, and create a file named `mosquitto1884.conf` with the follwing: 
+This will create a bridge to communicate with the drone. After installing mosquitto, go to the created folder for the program, and create a file named `mosquitto1884.conf` with the following: 
  ```sh
 listener 1884
 allow_anonymous true
