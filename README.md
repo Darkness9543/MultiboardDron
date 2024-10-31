@@ -31,7 +31,7 @@ The main features are:
 <!-- GETTING STARTED -->
 ## Getting Started
 
-To replicate this project locally, you can use tools like <a href="https://git-scm.com/">Git</a>, which, once installed, allows you to quickly clone the repository by right clicking your work folder, and using `git bash`. This will open a command window for git instructions, where you can use the following command" to get it locally.
+To replicate this project locally, you can use tools like <a href="https://git-scm.com/">Git</a>, which, once installed, allows you to quickly clone the repository by right clicking your work folder, and using `git bash`. This will open a command window for git instructions, where you can use the following command to get it locally.
  ```sh
 git clone %THIS_REPO_URL%
  ```
