@@ -1,0 +1,6 @@
+customtkinter
+tkintermapview
+paho-mqtt==1.6
+geographiclib
+shapely
+pymavlink
