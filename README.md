@@ -31,18 +31,18 @@ The main features are:
 <!-- GETTING STARTED -->
 ## Getting Started
 
-To replicate this project locally, you can use tools like <a href="https://git-scm.com/">Git</a>, which, once installed, allows you to quickly clone the repository by right clicking your work folder, and using "git bash". This will open a command window for git instructions, where you can use the following command" to get it locally.
+To replicate this project locally, you can use tools like <a href="https://git-scm.com/">Git</a>, which, once installed, allows you to quickly clone the repository by right clicking your work folder, and using `git bash`. This will open a command window for git instructions, where you can use the following command" to get it locally.
  ```sh
 git clone %THIS_REPO_URL%
  ```
 
 Once you have the code itself, continue by downloading <a href="https://ardupilot.org/planner/docs/mission-planner-installation.html">Mission Planner</a>, <a href="https://mosquitto.org/">Mosquitto</a> and setting up the work environment. I recommend using <a href="https://www.jetbrains.com/pycharm/download/?section=windows">Pycharm Community Edition</a>, which is completly free, and will be the one used from now on for the porpuses of this guide.
-To set the environment, open the project and create a virtual environment or use a system interpreter based on the last Python version available. Then proceed to download all the packages that are referenced in the project, using the "Python Packages" section of Pycharm, that can be opened from the bottom left menu.  
+To set the environment, open the project and create a virtual environment or use a system interpreter based on the last Python version available (At this time, 3.13). Then proceed to download all the packages that are referenced in the project, using the "Python Packages" section of Pycharm, that can be opened from the bottom left menu.  
 
 Once all of them are installed, try to execute the program. 
 
 ### Mosquitto
-After installing mosquitto, go to the folder where it is. There, create a file named mosquitto1884.conf with the follwing: 
+This will create a bridge to communicate with the drone. After installing mosquitto, go to the folder where it is. There, create a file named `mosquitto1884.conf` with the follwing: 
  ```sh
 listener 1884
 allow_anonymous true
@@ -93,15 +93,27 @@ bind port XXXX for SERIALX
 #### Map
 Finally, on the map several **actions** can be performed using a right-click, such as "**Takeoff**" and "**Move here**", which will control the drone, which must be armed first (see Data). It is quite important to have some patience with Mission Planner, as it requires the sequence Arm -> Takeoff -> Move to be performed timely and in order. 
 
-### Multiboard setup 
+## Multiboard setup 
 When you start the program, you should be met by the initial screen: 
+
+### Initial setup
 
 <img src="https://github.com/user-attachments/assets/a92d372f-cbc4-4ce0-9b45-f9986170912d" width="700">
 
 Here, you can choose the number of drones, their connection ports, the scenario and the connection method. A scenario is always required to poceed. 
 When using a simulation, the port defined in MissionPlanner should be used, and when live the COM port used for the telemetry antenna must be written. 
 
-#### Scenario editor
+### Connection
+By navigating the left menu, you can access the editor. Here you can create and modify scenarios, by defining a geofence for each of the drones involved. Simply click on the map and create he shape that you desire. To close the polygon, you can either click on the original point or right-click and complete the geofence automatically. Once the inclusion geofence is done, you can follow the same procedure to create exclusion zones, like for exemple obstacles you want to avoid. Switch drones with the right-side list and create the geofence for every drone, then save and your scenario is ready to go!
+
+<img src="??" width="700">
+
+### Control
+By navigating the left menu, you can access the editor. Here you can create and modify scenarios, by defining a geofence for each of the drones involved. Simply click on the map and create he shape that you desire. To close the polygon, you can either click on the original point or right-click and complete the geofence automatically. Once the inclusion geofence is done, you can follow the same procedure to create exclusion zones, like for exemple obstacles you want to avoid. Switch drones with the right-side list and create the geofence for every drone, then save and your scenario is ready to go!
+
+<img src="??" width="700">
+
+### Scenario editor
 By navigating the left menu, you can access the editor. Here you can create and modify scenarios, by defining a geofence for each of the drones involved. Simply click on the map and create he shape that you desire. To close the polygon, you can either click on the original point or right-click and complete the geofence automatically. Once the inclusion geofence is done, you can follow the same procedure to create exclusion zones, like for exemple obstacles you want to avoid. Switch drones with the right-side list and create the geofence for every drone, then save and your scenario is ready to go!
 
 <img src="https://github.com/user-attachments/assets/43a11abb-6846-4944-9721-5cc2f2962d03" width="700">
