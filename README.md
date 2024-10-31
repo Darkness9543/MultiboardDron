@@ -37,14 +37,14 @@ git clone %THIS_REPO_URL%
  ```
 
 Once you have the code itself, continue by downloading <a href="https://ardupilot.org/planner/docs/mission-planner-installation.html">Mission Planner</a>, <a href="https://mosquitto.org/">Mosquitto</a> and setting up the work environment. I recommend using <a href="https://www.jetbrains.com/pycharm/download/?section=windows">Pycharm Community Edition</a>, which is completly free, and will be the one used from now on for the porpuses of this guide.
-To set the environment, open the project and create a virtual environment or use a system interpreter based on the last Python version available (At this time, 3.13). Then proceed to download all the packages that are referenced in the project, by using: 
+To set the environment, open the project and create a virtual environment or use a system interpreter based on the last Python version available (currently 3.13). Then proceed to download all the packages that are referenced in the project, by using: 
 ```sh
 py -m pip install -r requirements.txt
 ```
 If any packages are missing or you want to manage them, use the "Python Packages" section of Pycharm, that can be opened from the bottom left menu. Once all of them are installed, try to execute the program from the file `main.py` or by creating a pycharm configuration that does it for you. 
 
 ### Mosquitto
-This will create a bridge to communicate with the drone. After installing mosquitto, go to the folder where it is. There, create a file named `mosquitto1884.conf` with the follwing: 
+This will create a bridge to communicate with the drone. After installing mosquitto, go to the created folder for the program, and create a file named `mosquitto1884.conf` with the follwing: 
  ```sh
 listener 1884
 allow_anonymous true
@@ -108,14 +108,14 @@ When using a simulation, the port defined in MissionPlanner should be used, and 
 ### Connection
 Here you can edit the parameters and limitations of each individual drone or share one configuration. This is also the moment to check that all drones are connected (green dot), and reconnect those who aren't. 
 
-<img src="??" width="700">
+<img src="https://github.com/user-attachments/assets/cfd2ba57-46b7-4d9d-9e31-2d0a5e314bde" width="700">
 
 ### Control
 This is the main view of the program. Here you can move the drones, see their positions and data and visualize their movements and geofences. 
-<img src="??" width="700">
+<img src="https://github.com/user-attachments/assets/4e6bd428-9a81-4d08-a707-90c9a2c130db" width="700">
 
 ### Scenario editor
-By navigating the left menu, you can access the editor. Here you can create and modify scenarios, by defining a geofence for each of the drones involved. Simply click on the map and create he shape that you desire. To close the polygon, you can either click on the original point or right-click and complete the geofence automatically. Once the inclusion geofence is done, you can follow the same procedure to create exclusion zones, like for exemple obstacles you want to avoid. Switch drones with the right-side list and create the geofence for every drone, then save and your scenario is ready to go!
+By navigating the left menu, you can access the editor. Here you can create and modify scenarios, by defining a geofence for each of the drones involved. Simply click on the map and create the shape that you desire. To close the polygon, you can either click on the original point or right-click and complete the geofence automatically. Once the inclusion geofence is done, you can follow the same procedure to create exclusion zones, like for exemple obstacles you want to avoid. Switch drones with the right-side list and create the geofence for every drone, then save and your scenario is ready to go!
 
 <img src="https://github.com/user-attachments/assets/43a11abb-6846-4944-9721-5cc2f2962d03" width="700">
 
